@@ -35,22 +35,26 @@ function rend_line(x,y){
     mapLayer.addChild(rectangle);
 }
 
+//let star_fill=
 function rend_block(list){
-    
+    var rendstargroup = new PIXI.Graphics();
+    //rendstargroup.fill()
     for(let i=0;i<list.length;i++){
         let x=list[i].x
         let y=list[i].y
+
         rend_star(x,y,rendstargroup,list[i]);
     }
-
+    rendstargroup.endFill();
+    mapLayer.addChild(rendstargroup);
 }
-var rendstargroup = new PIXI.Graphics();
+
 function rend_star(x,y,star,obj){
     
-    star.beginFill(0xffffff);
+    star.beginFill(temperature_to_rgb(obj.temp));
     star.drawCircle(x,y,5);
-    star.endFill();
-    mapLayer.addChild(star);
+    
+    
 }
     
    /*
@@ -88,15 +92,15 @@ function check_new_bolck(){
     let ys = -Math.ceil((mapLayer.y / tileSize) / mapLayer.scale.y) +1//- 1;
 
     // 计算右下角 (xe, ye)，考虑缩放后的屏幕范围
-    let xe = Math.ceil((-mapLayer.x + scaledScreenWidth) / tileSize / mapLayer.scale.x) -1//+ 1;
-    let ye = Math.ceil((-mapLayer.y + scaledScreenHeight) / tileSize / mapLayer.scale.y)-1//+ 1;
+    let xe = Math.ceil((-mapLayer.x + scaledScreenWidth) / tileSize / mapLayer.scale.x) -2//+ 1;
+    let ye = Math.ceil((-mapLayer.y + scaledScreenHeight) / tileSize / mapLayer.scale.y)-2//+ 1;
     /*
     let xs=-Math.ceil(-(mapLayer.x / 500) / mapLayer.scale.y) - 1;
     let ys=-Math.ceil(-(mapLayer.y / 500) / mapLayer.scale.y) - 1;
     let xe=Math.ceil()
 */
     if(areEqual([xs,ys,xe,ye],old_view_scxy)){return}
-    //console.log([xs,ys,xe,ye]);
+    //console.log([xs,ys,xe,ye],xs-xe,ys-ye)
     //console.log("check_new_bolck",xs,ys,xe,ye,mapLayer.scale.x,mapLayer.scale.y);
     for (let i = Math.min(xs, xe); i < Math.max(xs, xe); i++) {
         for (let j = Math.min(ys, ye); j < Math.max(ys, ye); j++) {
@@ -125,7 +129,7 @@ function rend_bolcks(){
         }
         let block=getblock(x,y);
         beload[[x,y]]={block:block};
-        const time2=Date.now(); 
+        //const time2=Date.now(); 
         rend_line(x,y);
         rend_block(block);  
         //console.log("rend_line",Date.now()-time2,block);

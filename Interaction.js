@@ -60,7 +60,7 @@ function onWheel(event) {
         : mapLayer.scale.x * scaleFactor; // 向上滚动，放大
 
     // 确保缩放不会超出最小/最大限制（可选）
-    const minScale = 0.1;
+    const minScale = 0.2;
     const maxScale = 5;
     if (newScale < minScale || newScale > maxScale) return;
 
