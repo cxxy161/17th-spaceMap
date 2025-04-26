@@ -4,23 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>第十五号星系-地图</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-        }
-        #pos_go {
-            position: absolute; 
-            top: 10px;
-            left: 10px;
-            z-index: 2
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="pos_go">
         <input type="text" id="pos_input" placeholder="请输入坐标(如：0,0)" />
         <button id="go_btn">Go</button>
+    </div>
+    <div id="infomation">
+        <div id="backcolor">
+            <button id="close_btn">关闭</button>
+            <div>恒星信息</div>
+            <div id="star_info"></div>
+        </div>
     </div>
     <div id="game-container"></div>
 

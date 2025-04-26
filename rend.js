@@ -129,8 +129,8 @@ function check_old_bolck(view){
         let st=sti.split(",").map(Number);
         //let st=beload[sti]
         //console.log(st,sti,view);
-        if(st[0]<view[0]-5||st[0]>=view[2]+5||st[1]<view[1]-5||st[1]>=view[3]+5){
-            console.log("remove",st[0],st[1]);
+        if(st[0]<view[0]-7||st[0]>=view[2]+7||st[1]<view[1]-7||st[1]>=view[3]+7){
+            //console.log("remove",st[0],st[1]);
             let rend=beload[st].rend
             mapLayer.removeChild(rend);
             delete beload[st];

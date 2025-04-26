@@ -1,0 +1,62 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+#pos_go {
+    position: absolute; 
+    top: 10px;
+    left: 10px;
+    z-index: 2
+}
+#infomation {
+    display: none;
+    position: absolute; 
+    top: 70px;
+    left: 10px;
+    z-index: 2
+}
+#backcolor {
+    width: 300px;
+    height: 500px;
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+#close_btn {
+    padding: 5px 12px;
+    background-color: #1cc6e4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    position: absolute; 
+    top: 10px; 
+    right: 10px; 
+}
+#pos_go {
+    position: absolute; 
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+#pos_input {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 8px;
+    width: 180px; /* 调整宽度以适应 #pos_go 的内边距 */
+}
+
+#go_btn {
+    background-color: #1cc6e4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 12px;
+    cursor: pointer;
+}
