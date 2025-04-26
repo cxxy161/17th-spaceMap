@@ -1,6 +1,6 @@
 import { app,mapLayer,beload,addload } from "./main.js";
 import { getblock } from "./data.js";
-import { temperature_to_rgb } from "./class.js";
+//import { temperature_to_rgb } from "./class.js";
 
 /*let whiteTexture; // 声明一个变量来存储白色纹理
 
@@ -55,7 +55,7 @@ function rend_block(list,bx,by){
 
 function rend_star(x,y,star,obj){
     
-    star.fill(temperature_to_rgb(obj.temp));
+    star.fill(obj.color);
     star.circle(x,y,5);
     
     

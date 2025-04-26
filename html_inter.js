@@ -30,6 +30,13 @@ var fanyi_key={
     'name':'名称',
     'type':'类型',
     'temp':'温度',
+    'luminosity':'光度',
+    'radius':'半径',
+    'age':'年龄',
+    'mass':'质量',
+    'gravity':'重力',
+    'escape_velocity':'逃逸速度',
+    'description':'描述',
 
 }
 export function chose_star(st){

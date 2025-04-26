@@ -74,24 +74,26 @@ export function rand(seed, min = 0, max = 1, isFloat = false) {
         return Math.floor(randomValue * (max - min + 1)) + min;
     }
 }
-export function randNormalCLT(seed, mean = 5000, stdDev = 5000, iterations = 12, min = 1000, max = 31000) {
-    // 确保种子是整数
-    seed = hash(seed);
-    seed = Math.floor(seed);
+export function randNormalCLT(seed, mean = 5000, stdDev = 5000, iterations = 12, min = -Infinity, max = Infinity, maxRetries = 3) {
+    seed = Math.imul(hash(seed), 0x6D2B79F5) >>> 0;
     
     let sum = 0;
     for (let i = 0; i < iterations; i++) {
-        let t = seed += 0x6D2B79F5;
-        t = Math.imul(t ^ t >>> 15, t | 1);
-        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-        sum += ((t ^ t >>> 14) >>> 0) / 4294967296;
+        seed ^= seed << 13;
+        seed ^= seed >>> 17;
+        seed ^= seed << 5;
+        const u = (seed >>> 0) / 4294967296;
+        sum += u;
+    }
+
+    const z = (sum - iterations / 2) / (Math.sqrt(iterations / 12)) * stdDev + mean;
+    
+    // 递归重试（最多 maxRetries 次）
+    if ((z < min || z > max) && maxRetries > 0) {
+        return randNormalCLT(seed + 1, mean, stdDev, iterations, min, max, maxRetries - 1);
     }
     
-    // 中心极限定理近似
-    let z = (sum - iterations / 2) / (Math.sqrt(iterations / 12));
-    z = z * stdDev + mean;
-    
-    // 确保结果在[min, max]范围内
+    // 超出重试次数后，直接截断到边界（避免无限递归）
     return Math.min(max, Math.max(min, z));
 }
 
@@ -107,7 +109,7 @@ export function hash(arr) {
 
     return Math.abs(hash);
 }
-
+/*
 var color_temps = [
 	[1000, [255, 128, 0]],
 	[3700, [255, 191, 0]],
@@ -144,7 +146,7 @@ export function temperature_to_rgb(temp){
         }
     }
 		
-}
+}*/
 
 function rgbToHex(rgbArray) {
     // 确保数组有3个元素且都是0-255的数字
