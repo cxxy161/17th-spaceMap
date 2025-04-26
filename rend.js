@@ -1,3 +1,6 @@
+import { app,mapLayer,beload,addload } from "./main.js";
+import { getblock } from "./data.js";
+import { temperature_to_rgb } from "./class.js";
 
 /*let whiteTexture; // 声明一个变量来存储白色纹理
 
@@ -51,8 +54,8 @@ function rend_block(list){
 
 function rend_star(x,y,star,obj){
     
-    star.beginFill(temperature_to_rgb(obj.temp));
-    star.drawCircle(x,y,5);
+    star.fill(temperature_to_rgb(obj.temp));
+    star.circle(x,y,5);
     
     
 }
@@ -78,7 +81,7 @@ const areEqual = (a, b) =>
     a.length === b.length && 
     a.every((item, index) => item === b[index]);
 
-function check_new_bolck(){
+export function check_new_bolck(){
     // 检查是否有新的块需要绘制
     // 计算缩放后的实际屏幕宽度和高度（世界 坐标）
     const scaledScreenWidth = app.screen.width / mapLayer.scale.x;
@@ -88,12 +91,12 @@ function check_new_bolck(){
     const tileSize = 500;
 
     // 计算左上角 (xs, ys)
-    let xs = -Math.ceil((mapLayer.x / tileSize) / mapLayer.scale.y) +1//- 1;
-    let ys = -Math.ceil((mapLayer.y / tileSize) / mapLayer.scale.y) +1//- 1;
+    let xs = -Math.ceil((mapLayer.x / tileSize) / mapLayer.scale.y) -1//- 1;
+    let ys = -Math.ceil((mapLayer.y / tileSize) / mapLayer.scale.y) -1//- 1;
 
     // 计算右下角 (xe, ye)，考虑缩放后的屏幕范围
-    let xe = Math.ceil((-mapLayer.x + scaledScreenWidth) / tileSize / mapLayer.scale.x) -2//+ 1;
-    let ye = Math.ceil((-mapLayer.y + scaledScreenHeight) / tileSize / mapLayer.scale.y)-2//+ 1;
+    let xe = Math.ceil((-mapLayer.x + scaledScreenWidth) / tileSize / mapLayer.scale.x) +1//+ 1;
+    let ye = Math.ceil((-mapLayer.y + scaledScreenHeight) / tileSize / mapLayer.scale.y)+1//+ 1;
     /*
     let xs=-Math.ceil(-(mapLayer.x / 500) / mapLayer.scale.y) - 1;
     let ys=-Math.ceil(-(mapLayer.y / 500) / mapLayer.scale.y) - 1;
@@ -130,7 +133,7 @@ function rend_bolcks(){
         let block=getblock(x,y);
         beload[[x,y]]={block:block};
         //const time2=Date.now(); 
-        rend_line(x,y);
+        //rend_line(x,y);
         rend_block(block);  
         //console.log("rend_line",Date.now()-time2,block);
         addload.splice(i,1);
@@ -144,7 +147,7 @@ function rend_bolcks(){
 
     //addload=[];
 }
-
+//console.log(window.app);
 app.ticker.add(() => {rend_bolcks();});
 
 //init_textures(); // 初始化纹理

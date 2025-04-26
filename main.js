@@ -1,21 +1,21 @@
 
 
 // 创建 Pixi 应用实例
-const app = new PIXI.Application({
-    width: 800,
-    height: 600,
-    backgroundColor: 0x100c2a,
+// 方式2：直接初始化（更简洁）
+export const app = new PIXI.Application({
+    resizeTo: window,
+    background: 0x100c2a,
     resolution: window.devicePixelRatio || 1,
     preference: 'webgl',
+    autoDensity: true
 });
-app.renderer.view.style.position = "absolute";
-app.renderer.view.style.display = "block";
-app.renderer.autoResize = true;
+await app.init()
 app.renderer.resize(window.innerWidth, window.innerHeight);
 
-// 将 Pixi 应用的视图添加到游戏容器中
-document.getElementById('game-container').appendChild(app.view);
-
+//console.log(app);
+app.canvas.style.position = "absolute";
+app.canvas.style.display = "block";
+document.getElementById('game-container').appendChild(app.canvas);
 // 创建地图层
 /*
 const mapLayer = new PIXI.ParticleContainer(10000, {
@@ -23,12 +23,13 @@ const mapLayer = new PIXI.ParticleContainer(10000, {
     position: true,
     tint: true 
 });*/
-const mapLayer = new PIXI.Container();
+export const mapLayer = new PIXI.Container();
 app.stage.addChild(mapLayer);
 
 // 创建UI层
 const uiLayer = new PIXI.Container();
 app.stage.addChild(uiLayer);
 
-beload={}
-addload=[]
+export const beload={}
+export const addload=[]
+ 

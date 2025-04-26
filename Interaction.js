@@ -1,3 +1,6 @@
+import { app,mapLayer } from "./main.js";
+import { check_new_bolck } from "./rend.js";
+
 app.stage.interactive = true;
 app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
 //mapLayer.buttonMode = true;
@@ -73,3 +76,8 @@ function onWheel(event) {
     check_new_bolck(); 
 }
 
+
+
+window.addEventListener('resize', () => {
+    app.renderer.resize(window.innerWidth, window.innerHeight);
+});

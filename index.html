@@ -9,17 +9,31 @@
             margin: 0;
             padding: 0;
         }
+        #pos_go {
+            position: absolute; 
+            top: 10px;
+            left: 10px;
+            z-index: 2
+        }
     </style>
 </head>
 <body>
+    <div id="pos_go">
+        <input type="text" id="pos_input" placeholder="请输入坐标(如：0,0)" />
+        <button id="go_btn">Go</button>
+    </div>
     <div id="game-container"></div>
 
     <!-- 引入 Pixi.js 库 -->
-    <script src="https://pixijs.download/v7.3.2/pixi.min.js"></script>
-    <script src="main.js"></script>
-    <script src="class.js"></script>
-    <script src="data.js"></script>
-    <script src="Interaction.js"></script>
-    <script src="rend.js"></script>
+    <script src="https://pixijs.download/v8.9.1/pixi.min.js"></script>
+    <script src="perlin.js"></script>
+
+    <script type="module" src="main.js"></script>
+    <script type="module" src="class.js"></script>
+    <script type="module" src="data.js"></script>
+    <script type="module"  src="Interaction.js"></script>
+    <script type="module" src="rend.js"></script>
+
+    <script type="module" src="html_inter.js"></script>
 </body>
 </html>

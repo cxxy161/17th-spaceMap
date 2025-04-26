@@ -1,61 +1,9 @@
-// 简化版柏林噪声实现
-class PerlinNoise {
-    constructor() {
-      this.gradients = {};
-      this.memory = {};
-    }
-  
-    rand_vect() {
-      let theta = Math.random() * 2 * Math.PI;
-      return {x: Math.cos(theta), y: Math.sin(theta)};
-    }
-  
-    dot_prod_grid(x, y, vx, vy) {
-      let g_vect;
-      let d_vect = {x: x - vx, y: y - vy};
-      if (this.gradients[[vx,vy]]) {
-        g_vect = this.gradients[[vx,vy]];
-      } else {
-        g_vect = this.rand_vect();
-        this.gradients[[vx,vy]] = g_vect;
-      }
-      return d_vect.x * g_vect.x + d_vect.y * g_vect.y;
-    }
-  
-    smootherstep(x) {
-      return 6*x**5 - 15*x**4 + 10*x**3;
-    }
-  
-    interp(x, a, b) {
-      return a + this.smootherstep(x) * (b-a);
-    }
-  
-    perlin(x, y) {
-      if (this.memory[[x,y]]) return this.memory[[x,y]];
-      
-      let xf = Math.floor(x);
-      let yf = Math.floor(y);
-      
-      // 获取四个角落的点积
-      let tl = this.dot_prod_grid(x, y, xf,   yf);
-      let tr = this.dot_prod_grid(x, y, xf+1, yf);
-      let bl = this.dot_prod_grid(x, y, xf,   yf+1);
-      let br = this.dot_prod_grid(x, y, xf+1, yf+1);
-      
-      // 插值
-      let xt = this.interp(x-xf, tl, tr);
-      let xb = this.interp(x-xf, bl, br);
-      let v = this.interp(y-yf, xt, xb);
-      
-      this.memory[[x,y]] = v;
-      return v;
-    }
-  }
+
   
 
-function rand(seed, min = 0, max = 1, isFloat = false) {
+export function rand(seed, min = 0, max = 1, isFloat = false) {
     // 确保种子是整数
-    seed=arrayToDecimalHash(seed);
+    seed=hash(seed);
     seed = Math.floor(seed);
 
     // Mulberry32算法 - 高质量的伪随机数生成
@@ -71,8 +19,28 @@ function rand(seed, min = 0, max = 1, isFloat = false) {
         return Math.floor(randomValue * (max - min + 1)) + min;
     }
 }
+export function randNormalCLT(seed, mean = 5000, stdDev = 5000, iterations = 12, min = 1000, max = 31000) {
+    // 确保种子是整数
+    seed = hash(seed);
+    seed = Math.floor(seed);
+    
+    let sum = 0;
+    for (let i = 0; i < iterations; i++) {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ t >>> 15, t | 1);
+        t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+        sum += ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+    
+    // 中心极限定理近似
+    let z = (sum - iterations / 2) / (Math.sqrt(iterations / 12));
+    z = z * stdDev + mean;
+    
+    // 确保结果在[min, max]范围内
+    return Math.min(max, Math.max(min, z));
+}
 
-function arrayToDecimalHash(arr) {
+export function hash(arr) {
     let hash = 0;
 
     for (let i = 0; i < arr.length; i++) {
@@ -94,7 +62,7 @@ var color_temps = [
 	[10000, [0, 128, 255]],
 	[30000, [0, 0, 255]]
 ]
-function temperature_to_rgb(temp){
+export function temperature_to_rgb(temp){
     if (temp <= color_temps[0][0]){
 		return color_temps[0][1]
     }
@@ -130,3 +98,80 @@ function rgbToHex(rgbArray) {
     // 使用位操作组合成十六进制数
     return (r << 16) | (g << 8) | b;
   }
+
+export class PerlinNoise2D {
+    constructor() {
+        this.gradients = new Map();
+        this.memory = new Map();
+    }
+
+    // 改进的随机梯度生成
+    _getGradient(x, y, seed) {
+        const key = `${x}|${y}|${seed}`;
+        if (this.gradients.has(key)) return this.gradients.get(key);
+
+        // 更好的哈希函数
+        let random = this._hash(x, y, seed);
+        
+        const angle = random * Math.PI * 2;
+        const gradient = [Math.cos(angle), Math.sin(angle)];
+        this.gradients.set(key, gradient);
+        return gradient;
+    }
+
+    // 改进的哈希函数
+    _hash(x, y, seed) {
+        let h = Math.sin(x * 127.1 + y * 311.7 + seed * 437.3) * 458.5453123;
+        return h - Math.floor(h);
+    }
+
+    // 点积计算
+    _dotProductGrid(x, y, vx, vy, seed) {
+        const g = this._getGradient(vx, vy, seed);
+        const dx = x - vx;
+        const dy = y - vy;
+        return dx * g[0] + dy * g[1];
+    }
+
+    // 平滑插值
+    _smoothInterpolate(a, b, w) {
+        return (b - a) * (6 * w**5 - 15 * w**4 + 10 * w**3) + a;
+    }
+
+    // 获取噪声值
+    get(x, y, seed = 0) {
+        const cacheKey = `${x}|${y}|${seed}`;
+        if (this.memory.has(cacheKey)) {
+            return this.memory.get(cacheKey);
+        }
+
+        // 确定网格单元
+        const x0 = Math.floor(x);
+        const x1 = x0 + 1;
+        const y0 = Math.floor(y);
+        const y1 = y0 + 1;
+
+        // 确定插值权重
+        const sx = x - x0;
+        const sy = y - y0;
+
+        // 计算四个角点的点积
+        const n0 = this._dotProductGrid(x, y, x0, y0, seed);
+        const n1 = this._dotProductGrid(x, y, x1, y0, seed);
+        const ix0 = this._smoothInterpolate(n0, n1, sx);
+
+        const n2 = this._dotProductGrid(x, y, x0, y1, seed);
+        const n3 = this._dotProductGrid(x, y, x1, y1, seed);
+        const ix1 = this._smoothInterpolate(n2, n3, sx);
+
+        const value = this._smoothInterpolate(ix0, ix1, sy);
+        
+        this.memory.set(cacheKey, value);
+        return value;
+    }
+
+    clearCache() {
+        this.gradients.clear();
+        this.memory.clear();
+    }
+}
