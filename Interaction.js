@@ -10,13 +10,14 @@ app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height
 let dragStart = { x: 0, y: 0 };
 
 // 监听鼠标按下事件
-app.stage.on('mousedown', onDragStart)
+app.stage.on('click',click_)
+        .on('mousedown', onDragStart)  
         .on('touchstart', onDragStart)
         //.on('touchstart', onTouchStart)
         .on('mouseup', onDragEnd)
         .on('mouseupoutside', onDragEnd)
         .on('touchend', onDragEnd)
-        .on('click',click_)
+        
         .on('touchendoutside', onDragEnd)
         .on('mousemove', onDragMove)
         .on('touchmove', onDragMove)
@@ -24,6 +25,7 @@ app.stage.on('mousedown', onDragStart)
 
 
 function click_(event){
+    if(mapLayer.dragging){return}
     let clpos=event.getLocalPosition(mapLayer);
     console.log(clpos.x,clpos.y);
     let bx=Math.floor(clpos.x/500);
@@ -98,6 +100,64 @@ function onWheel(event) {
     mapLayer.y = mousePosition.y - mouseInMapY * newScale;
     check_new_bolck(); 
 }
+let touchStartDist = 0;
+let touchStartScale = 1;
+
+function getTouchDistance(touches) {
+    const [touch1, touch2] = touches;
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+function onTouchStart(event) {
+    if (event.touches.length === 2) {
+        touchStartDist = getTouchDistance(event.touches);
+        touchStartScale = mapLayer.scale.x; // 保存开始缩放前的scale
+    }
+}
+
+function onTouchMove(event) {
+    if (event.touches.length === 2 && mapLayer.dragging) {
+        const currentDist = getTouchDistance(event.touches);
+        const scaleFactor = currentDist / touchStartDist;
+        const newScale = touchStartScale * scaleFactor;
+
+        const minScale = 0.2;
+        const maxScale = 5;
+        if (newScale < minScale || newScale > maxScale) return;
+
+        mapLayer.scale.set(newScale);
+
+        // 计算双指中心点在全局坐标系的位置
+        const touchMidX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+        const touchMidY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+
+        // 计算双指中心点在 mapLayer 坐标系中的位置
+        const mouseInMapX = (touchMidX - mapLayer.x) / mapLayer.scale.x;
+        const mouseInMapY = (touchMidY - mapLayer.y) / mapLayer.scale.y;
+
+        // 调整 mapLayer 的位置，使双指中心点保持不变
+        mapLayer.x = touchMidX - mouseInMapX * newScale;
+        mapLayer.y = touchMidY - mouseInMapY * newScale;
+        check_new_bolck();
+    }
+}
+
+function onTouchEnd() {
+    mapLayer.dragging = false;
+}
+
+// 将触摸事件添加到监听中
+app.stage.on('touchstart', event => {
+    onTouchStart(event);
+    onDragStart(event);
+}).on('touchmove', event => {
+    onTouchMove(event);
+    onDragMove(event);
+}).on('touchend', onTouchEnd);
+
+
 
 export function movecamera(x,y){
     // 移动地图层到指定位置
