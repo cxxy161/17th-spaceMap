@@ -39,8 +39,9 @@ function rend_line(x,y){
 }
 
 //let star_fill=
-function rend_block(list){
+function rend_block(list,bx,by){
     var rendstargroup = new PIXI.Graphics();
+    beload[[bx,by]].rend=rendstargroup
     //rendstargroup.fill()
     for(let i=0;i<list.length;i++){
         let x=list[i].x
@@ -102,7 +103,10 @@ export function check_new_bolck(){
     let ys=-Math.ceil(-(mapLayer.y / 500) / mapLayer.scale.y) - 1;
     let xe=Math.ceil()
 */
-    if(areEqual([xs,ys,xe,ye],old_view_scxy)){return}
+    if(areEqual([xs,ys,xe,ye],old_view_scxy)){
+        check_old_bolck(old_view_scxy)
+        return
+    }
     //console.log([xs,ys,xe,ye],xs-xe,ys-ye)
     //console.log("check_new_bolck",xs,ys,xe,ye,mapLayer.scale.x,mapLayer.scale.y);
     for (let i = Math.min(xs, xe); i < Math.max(xs, xe); i++) {
@@ -117,8 +121,23 @@ export function check_new_bolck(){
         }
     }
     old_view_scxy=[xs,ys,xe,ye]
+    check_old_bolck(old_view_scxy)
     //rend_bolcks();
 }
+function check_old_bolck(view){
+    for (let sti of Object.keys(beload)){
+        let st=sti.split(",").map(Number);
+        //let st=beload[sti]
+        //console.log(st,sti,view);
+        if(st[0]<view[0]-5||st[0]>=view[2]+5||st[1]<view[1]-5||st[1]>=view[3]+5){
+            console.log("remove",st[0],st[1]);
+            let rend=beload[st].rend
+            mapLayer.removeChild(rend);
+            delete beload[st];
+        }
+    }
+}
+
 
 function rend_bolcks(){
     // 渲染块
@@ -131,10 +150,10 @@ function rend_bolcks(){
             continue
         }
         let block=getblock(x,y);
-        beload[[x,y]]={block:block};
+        beload[[x,y]]={block:block,rend:null};
         //const time2=Date.now(); 
         //rend_line(x,y);
-        rend_block(block);  
+        rend_block(block,x,y);  
         //console.log("rend_line",Date.now()-time2,block);
         addload.splice(i,1);
         if(Date.now()-time>16){
