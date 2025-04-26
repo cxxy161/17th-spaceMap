@@ -1,5 +1,60 @@
 
-  
+
+/*/ XY坐标转36进制ID（完整精度，安全编码）
+export const xyToPosId = (x, y) => `${encodeNumber(x)}/${encodeNumber(y)}`;
+
+// 35进制ID转XY坐标
+export const posIdToXY = id => {
+    const [x, y] = id.split('/').map(decodeNumber);
+    return {x, y};
+};
+
+// 安全编码数字（整数和小数都转35进制）
+const encodeNumber = n => {
+    const sign = n < 0 ? 'N' : 'P';
+    const str = Math.abs(n).toString();
+    const [int, dec] = str.split('.');
+    
+    // 整数部分转35进制（D→X）
+    const intEnc = parseInt(int || '0').toString(35)
+                      .toUpperCase()
+                      .replace(/D/g, 'X');
+    
+    // 小数部分处理
+    const decEnc = dec ? 'D' + 
+                   parseInt(dec.padEnd(15, '0').substring(0, 15), 10)
+                      .toString(35)
+                      .toUpperCase()
+                      .replace(/D/g, 'X') : '';
+    
+    return sign + intEnc + decEnc;
+};
+
+// 安全解码数字
+const decodeNumber = s => {
+    const sign = s[0] === 'N' ? -1 : 1;
+    const parts = s.slice(1).split('D');
+    
+    // 解码整数部分
+    const int = parseInt(parts[0].replace(/X/g, 'D'), 35) || 0;
+    
+    // 解码小数部分
+    const dec = parts[1] ? 
+                parseInt(parts[1].replace(/X/g, 'D'), 35) / 
+                Math.pow(10, parts[1].length) : 
+                0;
+    
+    return sign * (int + dec);
+};*/
+// XY坐标转36进制ID（大写，无补位，'-'连接）
+export const xyToPosId = (x, y) => `${numToB36(x)}-${numToB36(y)}`;
+
+// 36进制ID转XY坐标
+export const posIdToXY = id => id.split('-').map(b36ToNum).reduce((o, v, i) => (i ? o.y = v : o.x = v, o), {});
+
+// 内部辅助函数
+const numToB36 = n => (n < 0 ? 'N' : 'P') + Math.abs(n).toString(36).toUpperCase();
+const b36ToNum = s => (s[0] === 'N' ? -1 : 1) * parseInt(s.slice(1).toLowerCase(), 36);
 
 export function rand(seed, min = 0, max = 1, isFloat = false) {
     // 确保种子是整数

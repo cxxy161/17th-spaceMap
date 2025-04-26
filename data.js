@@ -2,17 +2,22 @@
 //var noise=require('perlin.js')
 //type="module" 
 import {hash,rand,PerlinNoise2D,randNormalCLT} from './class.js';
+import {xyToPosId} from './class.js';
+
 
 function creat_star(bx,by,x,y,i){
     //let x = Math.floor(bx*500 + rand([bx,by,i,1],0,500))
     //let y = Math.floor(by*500 + rand([bx,by,i,2],0,500))
-    let sx = bx*500+x
-    let sy = by*500+y
+    let sx = Math.floor(bx*500+x)
+    let sy = Math.floor(by*500+y)
     let temp=randNormalCLT([sx,sy,i,3],7000,6000,12,1000,31000)
+    let posid = xyToPosId(sx, sy)
+
     
     return {
         'x':sx,
         'y':sy,
+        'posid':posid,
         'temp':temp,
     }
 }

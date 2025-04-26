@@ -1,5 +1,6 @@
-import { app,mapLayer } from "./main.js";
+import { app,beload,mapLayer } from "./main.js";
 import { check_new_bolck } from "./rend.js";
+import { chose_star } from "./html_inter.js";
 
 app.stage.interactive = true;
 app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
@@ -15,11 +16,33 @@ app.stage.on('mousedown', onDragStart)
         .on('mouseup', onDragEnd)
         .on('mouseupoutside', onDragEnd)
         .on('touchend', onDragEnd)
-        
+        .on('click',click_)
         .on('touchendoutside', onDragEnd)
         .on('mousemove', onDragMove)
         .on('touchmove', onDragMove)
         .on('wheel', onWheel);
+
+
+function click_(event){
+    let clpos=event.getLocalPosition(mapLayer);
+    console.log(clpos.x,clpos.y);
+    let bx=Math.floor(clpos.x/500);
+    let by=Math.floor(clpos.y/500);
+    let block=beload[[bx,by]];
+    if(block){
+        for(let st of block.block){
+            let pos={x:st.x,y:st.y}
+            if(Math.abs(pos.x-clpos.x)<50&&Math.abs(pos.y-clpos.y)<50){
+                //console.log("click star",st);
+                //st.click();
+                chose_star(st);
+                break
+            }
+        }
+    }
+}
+
+
 
 function onDragStart(event) {
     // 存储鼠标按下时的位置
@@ -76,6 +99,12 @@ function onWheel(event) {
     check_new_bolck(); 
 }
 
+export function movecamera(x,y){
+    // 移动地图层到指定位置
+    mapLayer.x = (-x*mapLayer.scale.x)+app.screen.width/2;
+    mapLayer.y = (-y*mapLayer.scale.y)+app.screen.height/2;
+    check_new_bolck(); 
+}
 
 
 window.addEventListener('resize', () => {
