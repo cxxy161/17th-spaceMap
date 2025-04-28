@@ -32,4 +32,4 @@ app.stage.addChild(uiLayer);
 
 export const beload={}
 export const addload=[]
- 
+export const datalist = {}

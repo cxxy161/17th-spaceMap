@@ -3,6 +3,7 @@
 //type="module" 
 import {hash,rand,PerlinNoise2D,randNormalCLT} from './class.js';
 import {xyToPosId} from './class.js';
+import { datalist } from './main.js';
 
 function classifyStarWithColor(age, temperature, radius, mass) {
     // ------ 1. 恒星分类逻辑（修正版） ------
@@ -199,6 +200,9 @@ export function getblock(x, y) {
         }
     }
     for(let st of starlists){
+        let dyata=null
+        //console.log(st.posid,datalist,st.posid in datalist)
+        if(st.posid in datalist){dyata=datalist[st.posid]}
         stardata.push({star:creat_star(x,y,st[0],st[1],i),data:null});
     }
     //console.log(starlists)
@@ -208,4 +212,5 @@ export function getblock(x, y) {
 
 export function savedata(st,data){
     st.data=data
+    datalist[st.star.posid]=data
 }
