@@ -1,11 +1,15 @@
 import {movecamera} from './Interaction.js';
 import {posIdToXY} from './class.js';
+import {savedata} from './data.js';
 //import {app} from './main.js';
 
 let input_gos_go = document.getElementById("pos_input");
 let buttun_gos_go = document.getElementById("go_btn");
 let info_fa_back=document.getElementById("infomation");
 let info_conve=document.getElementById("star_info");
+let input_star_name=document.getElementById("star_name_input");
+let now_star
+
 
 buttun_gos_go.addEventListener("click", function() {
     let value = input_gos_go.value;
@@ -40,19 +44,33 @@ var fanyi_key={
 
 }
 export function chose_star(st){
-    let pos=posIdToXY(st.posid);
-    console.log("click star",st,pos);
+    now_star=st
+    //let pos=posIdToXY(st.posid);
+    console.log("click star",st);
     info_fa_back.style.display = "block"
     info_conve.innerHTML=""
-    for(let key of Object.keys(st)){
+    input_star_name.value=st.data.name
+    for(let key of Object.keys(st.star)){
         let fkey
         if(key in fanyi_key){fkey=fanyi_key[key]}
         else{fkey=key}
-        let value=fkey+'：'+st[key]
+        let value=fkey+'：'+st.star[key]
         info_conve.innerHTML+=value+'<br>'
     }
 }
 
+document.getElementById("input_save").addEventListener("click", function() {
+    let name=input_star_name.value;
+    let saves={}
+    if(name){
+        saves.name=name
+    }
+    savedata(now_star,saves)
+})
+
+
 document.getElementById("close_btn").addEventListener("click", function() {
+    now_star=null
     info_fa_back.style.display = "none"
 })
+

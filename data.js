@@ -106,10 +106,10 @@ function creat_star(bx,by,x,y,i){
     //let y = Math.floor(by*500 + rand([bx,by,i,2],0,500))
     let sx = Math.floor(bx*500+x)
     let sy = Math.floor(by*500+y)
-    let temp=randNormalCLT([sx,sy,i,3],3500,2000,12,1000,40000)
-    let mass=randNormalCLT([sx,sy,i,4],0.5,0.8,12,0.08,100)//倍太阳质量
-    let age=randNormalCLT([sx,sy,i,5],5,3,12,0,138)//亿年
-    //let radius=randNormalCLT([sx,sy,i,6],0.8,1.5,12,0.01,1000)//倍太阳半径
+    let temp=randNormalCLT([sx,sy,i,3],3500,2000,1000,40000)
+    let mass=randNormalCLT([sx,sy,i,4],0.5,0.8,0.08,100)//倍太阳质量
+    let age=randNormalCLT([sx,sy,i,5],5,3,0,138)//亿年
+    //let radius=randNormalCLT([sx,sy,i,6],0.8,1.5,0.01,1000)//倍太阳半径
     let radius;
     if (mass < 8) {
     radius = Math.pow(mass, 0.8); // 主序星半径-质量关系
@@ -199,8 +199,13 @@ export function getblock(x, y) {
         }
     }
     for(let st of starlists){
-        stardata.push(creat_star(x,y,st[0],st[1],i));
+        stardata.push({star:creat_star(x,y,st[0],st[1],i),data:null});
     }
     //console.log(starlists)
     return stardata;
+}
+
+
+export function savedata(st,data){
+    st.data=data
 }

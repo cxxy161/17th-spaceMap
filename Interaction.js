@@ -33,7 +33,7 @@ function click_(event){
     let block=beload[[bx,by]];
     if(block){
         for(let st of block.block){
-            let pos={x:st.x,y:st.y}
+            let pos={x:st.star.x,y:st.star.y}
             if(Math.abs(pos.x-clpos.x)<50&&Math.abs(pos.y-clpos.y)<50){
                 //console.log("click star",st);
                 //st.click();

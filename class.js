@@ -74,27 +74,23 @@ export function rand(seed, min = 0, max = 1, isFloat = false) {
         return Math.floor(randomValue * (max - min + 1)) + min;
     }
 }
-export function randNormalCLT(seed, mean = 5000, stdDev = 5000, iterations = 12, min = -Infinity, max = Infinity, maxRetries = 3) {
-    seed = Math.imul(hash(seed), 0x6D2B79F5) >>> 0;
-    
-    let sum = 0;
-    for (let i = 0; i < iterations; i++) {
-        seed ^= seed << 13;
-        seed ^= seed >>> 17;
-        seed ^= seed << 5;
-        const u = (seed >>> 0) / 4294967296;
-        sum += u;
-    }
+export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = 1000, max = 31000) {
+    // 将目标区间映射到[0,1]
+    const range = max - min;
+    const normalizedMean = (mean - min) / range;
+    const normalizedStd = stdDev / range;
 
-    const z = (sum - iterations / 2) / (Math.sqrt(iterations / 12)) * stdDev + mean;
-    
-    // 递归重试（最多 maxRetries 次）
-    if ((z < min || z > max) && maxRetries > 0) {
-        return randNormalCLT(seed + 1, mean, stdDev, iterations, min, max, maxRetries - 1);
-    }
-    
-    // 超出重试次数后，直接截断到边界（避免无限递归）
-    return Math.min(max, Math.max(min, z));
+    // 计算Beta分布的α和β参数（近似正态形态）
+    const alpha = normalizedMean * (normalizedMean*(1-normalizedMean)/(normalizedStd*normalizedStd) - 1);
+    const beta = (1-normalizedMean) * (normalizedMean*(1-normalizedMean)/(normalizedStd*normalizedStd) - 1);
+
+    // 用种子生成Beta分布随机数（简化版）
+    const gamma1 = -Math.log(hash(seed) / 0xFFFFFFFF);
+    const gamma2 = -Math.log(hash(seed + 1) / 0xFFFFFFFF);
+    const betaValue = gamma1 / (gamma1 + gamma2);
+
+    // 线性变换回原区间
+    return min + betaValue * range;
 }
 
 export function hash(arr) {

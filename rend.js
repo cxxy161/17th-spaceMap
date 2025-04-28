@@ -44,10 +44,10 @@ function rend_block(list,bx,by){
     beload[[bx,by]].rend=rendstargroup
     //rendstargroup.fill()
     for(let i=0;i<list.length;i++){
-        let x=list[i].x
-        let y=list[i].y
+        let x=list[i].star.x
+        let y=list[i].star.y
 
-        rend_star(x,y,rendstargroup,list[i]);
+        rend_star(x,y,rendstargroup,list[i].star);
     }
     rendstargroup.endFill();
     mapLayer.addChild(rendstargroup);
