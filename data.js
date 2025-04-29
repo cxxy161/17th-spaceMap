@@ -205,7 +205,8 @@ export function getblock(x, y) {
         let dyata=null
         //console.log(st.posid,datalist,st.posid in datalist)
         if(st.posid in datalist){dyata=datalist[st.posid]}
-        stardata.push({star:creat_star(x,y,st[0],st[1],i),data:null});
+        let geshi={star:creat_star(x,y,st[0],st[1],i),data:null}
+        stardata.push(geshi);
     }
     //console.log(starlists)
     return stardata;

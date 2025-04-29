@@ -8,23 +8,50 @@ app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height
 //app.stage.eventMode = 'dynamic';
 // 变量用于存储鼠标按下时的位置
 let dragStart = { x: 0, y: 0 };
+let initialDistance = null;
+let initialScale = 1;
+let initialPosition = { x: 0, y: 0 };
 
 // 监听鼠标按下事件
 app.stage.on('mousedown', onDragStart)
-        .on('click',click_)
-        .on('touchstart', onDragStart)
-        //.on('touchstart', onTouchStart)
-        .on('mouseup', onDragEnd)
-        .on('mouseupoutside', onDragEnd)
-        .on('touchend', onDragEnd)
-        
-        .on('touchendoutside', onDragEnd)
-        .on('mousemove', onDragMove)
-        .on('touchmove', onDragMove)
-        .on('wheel', onWheel);
+    .on('click', click_)
+    .on('touchstart', (event) => {
+        const touches = getTouches(event);
+        if (touches && touches.length >= 2) {
+            onPinchStart(event);
+        } else {
+            onDragStart(event);
+        }
+    })
+    .on('mouseup', onDragEnd)
+    .on('mouseupoutside', onDragEnd)
+    .on('touchend', (event) => {
+        const touches = getTouches(event);
+        if (!touches || touches.length < 2) {
+            onDragEnd();
+            initialDistance = null;
+        }
+    })
+    .on('touchendoutside', onDragEnd)
+    .on('mousemove', onDragMove)
+    .on('touchmove', (event) => {
+        const touches = getTouches(event);
+        if (touches && touches.length >= 2) {
+            onPinchMove(event);
+        } else {
+            onDragMove(event);
+        }
+    })
+    .on('wheel', onWheel);
 
-
-
+// 添加这个辅助函数来安全地获取触摸点
+function getTouches(event) {
+    // 尝试不同的方式获取触摸点，兼容不同浏览器和PIXI版本
+    return event.data.originalEvent?.touches || 
+           event.data.touches || 
+           event.touches || 
+           [];
+}
 
 
 
@@ -83,6 +110,60 @@ function onWheel(event) {
     mapLayer.x = mousePosition.x - mouseInMapX * newScale;
     mapLayer.y = mousePosition.y - mouseInMapY * newScale;
     check_new_bolck(); 
+}
+
+function onPinchStart(event) {
+    const touches = event.data.originalEvent.touches;
+    
+    // 计算两个触摸点之间的距离
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    initialDistance = Math.sqrt(dx * dx + dy * dy);
+    
+    // 存储初始缩放和位置
+    initialScale = mapLayer.scale.x;
+    initialPosition.x = (touches[0].clientX + touches[1].clientX) / 2;
+    initialPosition.y = (touches[0].clientY + touches[1].clientY) / 2;
+    
+    // 停止拖动
+    mapLayer.dragging = false;
+}
+
+// 双指缩放的移动处理
+function onPinchMove(event) {
+    if (!initialDistance) return;
+    
+    const touches = event.data.originalEvent.touches;
+    
+    // 计算当前两个触摸点之间的距离
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    const currentDistance = Math.sqrt(dx * dx + dy * dy);
+    
+    // 计算缩放比例
+    const scale = initialScale * (currentDistance / initialDistance);
+    
+    // 限制最小和最大缩放
+    const minScale = 0.2;
+    const maxScale = 5;
+    const clampedScale = Math.min(Math.max(scale, minScale), maxScale);
+    
+    // 计算中心点位置
+    const centerX = (touches[0].clientX + touches[1].clientX) / 2;
+    const centerY = (touches[0].clientY + touches[1].clientY) / 2;
+    
+    // 计算中心点在 mapLayer 坐标系中的位置
+    const mouseInMapX = (centerX - mapLayer.x) / mapLayer.scale.x;
+    const mouseInMapY = (centerY - mapLayer.y) / mapLayer.scale.y;
+    
+    // 应用缩放
+    mapLayer.scale.set(clampedScale);
+    
+    // 调整位置，使中心点保持不变
+    mapLayer.x = centerX - mouseInMapX * clampedScale;
+    mapLayer.y = centerY - mouseInMapY * clampedScale;
+    
+    check_new_bolck();
 }
 
 
