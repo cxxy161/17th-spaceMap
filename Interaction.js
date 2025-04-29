@@ -10,8 +10,8 @@ app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height
 let dragStart = { x: 0, y: 0 };
 
 // 监听鼠标按下事件
-app.stage.on('mousedown',click_)
-        .on('mousedown', onDragStart)  
+app.stage.on('mousedown', onDragStart)
+        .on('click',click_)
         .on('touchstart', onDragStart)
         //.on('touchstart', onTouchStart)
         .on('mouseup', onDragEnd)
@@ -39,6 +39,7 @@ function onDragStart(event) {
 function onDragEnd() {
     // 移除鼠标移动事件监听
     mapLayer.dragging = false;
+    
     //mapLayer.eventMode = 'static';
 }
 
@@ -47,6 +48,7 @@ function onDragMove(event) {
     if (mapLayer.dragging) {
         mapLayer.x = event.data.global.x - dragStart.x;
         mapLayer.y = event.data.global.y - dragStart.y;
+        mapLayer.lastdrag = Date.now();
         //mapLayer.eventMode = 'dynamic'; // 或者使用 deprecated 的 mapLayer.interactive = false;
         check_new_bolck(); 
     }
@@ -99,7 +101,7 @@ window.addEventListener('resize', () => {
 });
 
 function click_(event){
-    if(mapLayer.dragging){return}
+    if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
     let clpos=event.getLocalPosition(mapLayer);
     //console.log(clpos.x,clpos.y);
     let bx=Math.floor(clpos.x/500);
