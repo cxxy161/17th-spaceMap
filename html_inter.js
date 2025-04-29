@@ -8,7 +8,7 @@ let input_gos_go = document.getElementById("pos_input");
 let buttun_gos_go = document.getElementById("go_btn");
 let info_fa_back=document.getElementById("infomation");
 let info_conve=document.getElementById("star_info");
-let input_star_name=document.getElementById("star_name_input");
+
 
 let now_star
 
@@ -66,11 +66,17 @@ export function chose_star(st){
     }
 }
 
+let input_star_name=document.getElementById("star_name_input");
+let input_star_remark=document.getElementById("star_remark_input");
 document.getElementById("input_save").addEventListener("click", function() {
     let name=input_star_name.value;
+    let remark=input_star_remark.value;
     let saves={}
     if(name){
         saves.name=name
+    }
+    if(remark){
+        saves.remark=remark
     }
     savedata(now_star,saves)
 })

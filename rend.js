@@ -162,7 +162,7 @@ function rend_bolcks(){
 
         //console.log("rend_bolck",x,y,block);
     }
-    console.log("rend_bolcks",Date.now()-time,addload.length,Object.keys(beload).length);
+    //console.log("rend_bolcks",Date.now()-time,addload.length,Object.keys(beload).length);
 
     //addload=[];
 }

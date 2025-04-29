@@ -107,9 +107,11 @@ function creat_star(bx,by,x,y,i){
     //let y = Math.floor(by*500 + rand([bx,by,i,2],0,500))
     let sx = Math.floor(bx*500+x)
     let sy = Math.floor(by*500+y)
-    let temp=randNormalCLT([sx,sy,i,3],3500,2000,1000,40000)
-    let mass=randNormalCLT([sx,sy,i,4],0.5,0.8,0.08,100)//倍太阳质量
-    let age=randNormalCLT([sx,sy,i,5],5,3,0,138)//亿年
+    let temp=randNormalCLT([sx,sy,i,3],3500,20000,1000,40000)
+    //let temp=rand([sx,sy,i,3],1000,40000)
+    let mass=randNormalCLT([sx,sy,i,4],0.5,8,0.08,100)//倍太阳质量
+    //let mass=randNormalCLT([sx,sy,i,4],0.5,0.8,0.08,100)//倍太阳质量
+    let age=randNormalCLT([sx,sy,i,5],5,30,0,138)//亿年
     //let radius=randNormalCLT([sx,sy,i,6],0.8,1.5,0.01,1000)//倍太阳半径
     let radius;
     if (mass < 8) {

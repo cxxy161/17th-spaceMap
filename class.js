@@ -74,23 +74,47 @@ export function rand(seed, min = 0, max = 1, isFloat = false) {
         return Math.floor(randomValue * (max - min + 1)) + min;
     }
 }
-export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = 1000, max = 31000) {
-    // 将目标区间映射到[0,1]
-    const range = max - min;
-    const normalizedMean = (mean - min) / range;
-    const normalizedStd = stdDev / range;
+export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = -Infinity, max = Infinity, maxRetries = 3) {
+    // 增强型种子处理（支持数字和字符串种子）
+    let iterations = 10; // CLT迭代次数
+    let state = typeof seed === 'string' ? 
+        stringHash(seed) : 
+        Math.imul(hash(seed), 0x6D2B79F5) >>> 0;
+    
+    // 优化的随机数生成循环
+    let sum = 0;
+    for (let i = 0; i < iterations; i++) {
+        state ^= state << 13;
+        state ^= state >>> 17;
+        state ^= state << 5;
+        // 使用53位精度随机数
+        const u = ((state >>> 0) / 4294967296) + 
+                 (state & 0x1FFFFF) / 9007199254740992;
+        sum += u;
+    }
 
-    // 计算Beta分布的α和β参数（近似正态形态）
-    const alpha = normalizedMean * (normalizedMean*(1-normalizedMean)/(normalizedStd*normalizedStd) - 1);
-    const beta = (1-normalizedMean) * (normalizedMean*(1-normalizedMean)/(normalizedStd*normalizedStd) - 1);
-
-    // 用种子生成Beta分布随机数（简化版）
-    const gamma1 = -Math.log(hash(seed) / 0xFFFFFFFF);
-    const gamma2 = -Math.log(hash(seed + 1) / 0xFFFFFFFF);
-    const betaValue = gamma1 / (gamma1 + gamma2);
-
-    // 线性变换回原区间
-    return min + betaValue * range;
+    // 计算Z分数（优化计算过程）
+    const z = (sum - iterations / 2) * Math.sqrt(12 / iterations) * stdDev + mean;
+    
+    // 边界处理（优化递归为迭代）
+    let result = z;
+    let retries = maxRetries;
+    while ((result < min || result > max) && retries-- > 0) {
+        state = state * 1664525 + 1013904223 >>> 0;
+        let newSum = 0;
+        for (let i = 0; i < iterations; i++) {
+            state ^= state << 13;
+            state ^= state >>> 17;
+            state ^= state << 5;
+            const u = ((state >>> 0) / 4294967296) + 
+                     (state & 0x1FFFFF) / 9007199254740992;
+            newSum += u;
+        }
+        result = (newSum - iterations / 2) * Math.sqrt(12 / iterations) * stdDev + mean;
+    }
+    
+    // 最终边界截断（避免无限循环）
+    return Math.min(max, Math.max(min, result));
 }
 
 export function hash(arr) {
