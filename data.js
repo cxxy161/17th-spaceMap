@@ -102,6 +102,23 @@ function temperatureToRGB(temp) {
     return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 }
 
+function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5,id) {
+    const orbits = [];
+    
+    // 生成幂律分布的初始候选轨道（范围[minAU, maxAU]）
+    for (let i = 0; i < planetCount; i++) {
+        // 生成[0,1)均匀随机数，转换为幂律分布（指数-1.5）
+        const u = rand([id,i],0,1,true);
+        const powerLawValue = Math.pow(u, -1 / 1.5);
+        
+        // 将幂律值映射到[minAU, maxAU]范围（需归一化）
+        const a = minAU + (maxAU - minAU) * (1 - Math.pow(powerLawValue, -2/3)); // 修正映射公式
+        orbits.push(Math.floor(a*100)/100);
+    }
+    
+    // 按轨道距离排序
+    return orbits.sort((a, b) => a - b);
+}
 function creat_star(bx,by,x,y,i){
     //let x = Math.floor(bx*500 + rand([bx,by,i,1],0,500))
     //let y = Math.floor(by*500 + rand([bx,by,i,2],0,500))
@@ -124,19 +141,31 @@ function creat_star(bx,by,x,y,i){
     let color=data.color.rgb
     let posid = xyToPosId(sx, sy)
 
-    
+    let planetnum=Math.max(rand([sx,sy,i,6],0,18)-10,0)
+    let planetminau=rand([sx,sy,i,7],0,2)
+    let planetmaxau=rand([sx,sy,i,8],3,30)
+    let planetorbits=generatePlanetOrbits(mass,planetminau,planetmaxau,planetnum,posid)
+
     return {
         'x':sx,
         'y':sy,
+        'index':i,
         'posid':posid,
         'temp':temp,
         'mass':mass,
         'age':age,
         'radius':radius,
         'type':type,
-        'color':color
+        'color':color,
+        'planets':planetorbits,
+        //'num':[planetnum,planetminau,planetmaxau,rand([sx,sy,i,6],0,18) ]
     }
 }
+
+function creat_planet(id,i){
+    let high=1
+}
+
 
 
 let bloseed=hash(['block'])
@@ -205,7 +234,11 @@ export function getblock(x, y) {
         let dyata=null
         //console.log(st.posid,datalist,st.posid in datalist)
         if(st.posid in datalist){dyata=datalist[st.posid]}
-        let geshi={star:creat_star(x,y,st[0],st[1],i),data:null}
+        let geshi={
+            star:creat_star(x,y,st[0],st[1],i),
+            data:null,
+            planet:null
+        }
         stardata.push(geshi);
     }
     //console.log(starlists)

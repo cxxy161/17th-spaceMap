@@ -56,7 +56,7 @@ function rend_block(list,bx,by){
 function rend_star(x,y,star,obj){
     
     star.fill(obj.color);
-    star.circle(x,y,5);
+    star.circle(x,y,10);
     
     
 }
