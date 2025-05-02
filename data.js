@@ -162,8 +162,48 @@ function creat_star(bx,by,x,y,i){
     }
 }
 
-function creat_planet(id,i){
-    let high=1
+const planet_type={
+    '类地行星':{
+        'rou':[4,5.5],
+        'rad':[0.5,1.5],
+        'mass':[0.1,10]
+    },
+    '超级地球':{
+        'rou':[2,5],
+        'rad':[1.5,2.5],
+        'mass':[5,10]
+    },
+    '冰巨星':{
+        'rou':[1,2],
+        'rad':[3,5],
+        'mass':[10,50]
+    },
+    '气态巨星':{
+        'rou':[0.5,1.5],
+        'rad':[5,12],
+        'mass':[50,3000]
+    },
+}
+const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3']
+
+
+function creat_planet(stid,heigh,st){
+    let numid=hash([stid,heigh])
+    let type=Object.keys(planet_type)[Math.floor(rand([numid,1],0,3))]
+    let mass=rand([numid,2],planet_type[type].mass[0],planet_type[type].mass[1])//倍地球质量
+    let radius=rand([numid,3],planet_type[type].rad[0],planet_type[type].rad[1])//倍地球半径
+    let rou=mass/radius**3*4//平均密度
+    let g=6.674e-11*mass/(radius**2)//重力加速度
+
+
+    return {
+        'mass':mass,
+        'radius':radius,
+        'rou':rou,
+        'g':g,
+        'type':type,
+        
+    }
 }
 
 
