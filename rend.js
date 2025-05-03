@@ -1,5 +1,6 @@
-import { app,mapLayer,beload,addload } from "./main.js";
-import { getblock } from "./data.js";
+import { app,mapLayer,beload,addload,planetLayer } from "./main.js";
+import { getblock,creat_planet } from "./data.js";
+import { rand } from "./class.js";
 //import { temperature_to_rgb } from "./class.js";
 
 /*let whiteTexture; // 声明一个变量来存储白色纹理
@@ -166,6 +167,37 @@ function rend_bolcks(){
 
     //addload=[];
 }
+
+export function rend_planet(data){
+    //star
+    let newg=new PIXI.Graphics();
+    let st=data.star;
+    
+    newg.fill(st.color)
+    newg.circle(100,100,st.radius*10);
+    for(let he of st.planets){
+        let plt=creat_planet(st.posid,he,st)
+        let jizuobiao=rand([st.posid,he,1],0,2*Math.PI)
+        let rendx=he*Math.cos(jizuobiao);
+        let rendy=he*Math.sin(jizuobiao);
+
+        newg.circle(rendx,rendy,plt.radius*5);
+    }
+
+    newg.endFill();
+    planetLayer.addChild(newg);
+}
+
+
+
+
+
+
+
+
+
+
+
 //console.log(window.app);
 app.ticker.add(() => {rend_bolcks();});
 

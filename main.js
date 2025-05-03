@@ -27,9 +27,10 @@ export const mapLayer = new PIXI.Container();
 app.stage.addChild(mapLayer);
 
 // 创建UI层
-const uiLayer = new PIXI.Container();
-app.stage.addChild(uiLayer);
+export const planetLayer = new PIXI.Container();
+app.stage.addChild(planetLayer);
 
 export const beload={}
 export const addload=[]
 export const datalist = {}
+

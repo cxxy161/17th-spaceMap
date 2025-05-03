@@ -1,5 +1,5 @@
-import { app,beload,mapLayer } from "./main.js";
-import { check_new_bolck } from "./rend.js";
+import { app,beload,mapLayer,planetLayer} from "./main.js";
+import { check_new_bolck, rend_planet } from "./rend.js";
 import { chose_star } from "./html_inter.js";
 
 app.stage.interactive = true;
@@ -53,29 +53,37 @@ function getTouches(event) {
            [];
 }
 
-
+function which(){
+    if(now_view=='map'){return mapLayer}
+    else if(now_view=='planet'){return planetLayer}
+}
 
 function onDragStart(event) {
+    let layer=which();
     // 存储鼠标按下时的位置
     //console.log(event.data.global.x,event.data.global.y);
-    mapLayer.dragging = true;
-    dragStart.x = event.data.global.x - mapLayer.x;
-    dragStart.y = event.data.global.y - mapLayer.y;
+    layer.dragging = true;
+    dragStart.x = event.data.global.x - layer.x;
+    dragStart.y = event.data.global.y - layer.y;
 }
 
 function onDragEnd() {
     // 移除鼠标移动事件监听
-    mapLayer.dragging = false;
+    let layer=which();
+
+    layer.dragging = false;
     
     //mapLayer.eventMode = 'static';
 }
 
 function onDragMove(event) {
+    let layer=which();
+
     // 如果正在拖动地图层
-    if (mapLayer.dragging) {
-        mapLayer.x = event.data.global.x - dragStart.x;
-        mapLayer.y = event.data.global.y - dragStart.y;
-        mapLayer.lastdrag = Date.now();
+    if (layer.dragging) {
+        layer.x = event.data.global.x - dragStart.x;
+        layer.y = event.data.global.y - dragStart.y;
+        layer.lastdrag = Date.now();
         //mapLayer.eventMode = 'dynamic'; // 或者使用 deprecated 的 mapLayer.interactive = false;
         check_new_bolck(); 
     }
@@ -85,18 +93,19 @@ function onDragMove(event) {
 
 function onWheel(event) {
     event.preventDefault(); // 防止页面滚动
+    let layer=which();
 
     const scaleFactor = 1.2; // 缩放因子（1.2 表示每次缩放 20%）
     const mousePosition = event.data.global; // 鼠标在全局坐标系的位置
 
     // 计算鼠标在 mapLayer 坐标系中的位置（相对于 mapLayer 的左上角）
-    const mouseInMapX = (mousePosition.x - mapLayer.x) / mapLayer.scale.x;
-    const mouseInMapY = (mousePosition.y - mapLayer.y) / mapLayer.scale.y;
+    const mouseInMapX = (mousePosition.x - layer.x) / layer.scale.x;
+    const mouseInMapY = (mousePosition.y - layer.y) / layer.scale.y;
 
     // 计算缩放后的新 scale
     const newScale = event.deltaY > 0 
-        ? mapLayer.scale.x / scaleFactor  // 向下滚动，缩小
-        : mapLayer.scale.x * scaleFactor; // 向上滚动，放大
+        ? layer.scale.x / scaleFactor  // 向下滚动，缩小
+        : layer.scale.x * scaleFactor; // 向上滚动，放大
 
     // 确保缩放不会超出最小/最大限制（可选）
     const minScale = 0.2;
@@ -104,11 +113,11 @@ function onWheel(event) {
     if (newScale < minScale || newScale > maxScale) return;
 
     // 更新缩放
-    mapLayer.scale.set(newScale);
+    layer.scale.set(newScale);
 
     // 调整 mapLayer 的位置，使鼠标指向的位置保持不变
-    mapLayer.x = mousePosition.x - mouseInMapX * newScale;
-    mapLayer.y = mousePosition.y - mouseInMapY * newScale;
+    layer.x = mousePosition.x - mouseInMapX * newScale;
+    layer.y = mousePosition.y - mouseInMapY * newScale;
     check_new_bolck(); 
 }
 
@@ -181,22 +190,60 @@ window.addEventListener('resize', () => {
     app.renderer.resize(window.innerWidth, window.innerHeight);
 });
 
-function click_(event){
-    if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
-    let clpos=event.getLocalPosition(mapLayer);
-    //console.log(clpos.x,clpos.y);
-    let bx=Math.floor(clpos.x/500);
-    let by=Math.floor(clpos.y/500);
+function intostar(x,y){
+    let bx=Math.floor(x/500);
+    let by=Math.floor(y/500);
     let block=beload[[bx,by]];
     if(block){
         for(let st of block.block){
             let pos={x:st.star.x,y:st.star.y}
-            if(Math.abs(pos.x-clpos.x)<50&&Math.abs(pos.y-clpos.y)<50){
+            if(Math.abs(pos.x-x)<50&&Math.abs(pos.y-y)<50){
                 //console.log("click star",st);
                 //st.click();
-                chose_star(st);
-                break
+                return st;
             }
         }
     }
+    return null;
 }
+
+
+function click_(event){
+    if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
+    let clpos=event.getLocalPosition(mapLayer);
+    //console.log(clpos.x,clpos.y);
+    let st=intostar(clpos.x,clpos.y);
+    if(st){
+        chose_star(st);
+    }
+}
+
+let now_view='map'
+// 监听键盘事件
+window.addEventListener('keydown', (event) => {
+    //console.log(event.key);
+    if (event.key === 'Escape' && now_view=='planet') {
+        now_view='map'
+        planetLayer.visible=false
+        mapLayer.visible=true
+        console.log('into map')
+        
+    }
+});
+window.addEventListener('mousedown', (event) => {
+    if (event.button === 2 && now_view=='map') {
+        //let pos=event.getLocalPosition(mapLayer);
+        let pos=mapLayer.toLocal(new PIXI.Point(event.clientX, event.clientY));
+        let st=intostar(pos.x,pos.y);
+        if(st){
+            now_view='planet'
+            planetLayer.visible=true
+            mapLayer.visible=false
+            console.log('into planet',st)
+            rend_planet(st)
+        }
+    }
+});
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+  });

@@ -187,7 +187,7 @@ const planet_type={
 const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3']
 
 
-function creat_planet(stid,heigh,st){
+export function creat_planet(stid,heigh,st){
     let numid=hash([stid,heigh])
     let type=Object.keys(planet_type)[Math.floor(rand([numid,1],0,3))]
     let mass=rand([numid,2],planet_type[type].mass[0],planet_type[type].mass[1])//倍地球质量
