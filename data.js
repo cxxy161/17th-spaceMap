@@ -202,7 +202,7 @@ export function creat_planet(stid,heigh,st){
         'rou':rou,
         'g':g,
         'type':type,
-        
+        'color':'rgb(255,255,255)'
     }
 }
 

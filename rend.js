@@ -170,22 +170,41 @@ function rend_bolcks(){
 
 export function rend_planet(data){
     //star
-    let newg=new PIXI.Graphics();
+    planetLayer.removeChildren();
+
     let st=data.star;
+    let star=new PIXI.Graphics();
+    star.fill(st.color)
+    star.circle(0,0,st.radius*2);
+    star.endFill();
+    planetLayer.addChild(star);
     
-    newg.fill(st.color)
-    newg.circle(100,100,st.radius*10);
+    
+    
     for(let he of st.planets){
         let plt=creat_planet(st.posid,he,st)
         let jizuobiao=rand([st.posid,he,1],0,2*Math.PI)
-        let rendx=he*Math.cos(jizuobiao);
-        let rendy=he*Math.sin(jizuobiao);
+        let rendx=he*100*Math.cos(jizuobiao);
+        let rendy=he*100*Math.sin(jizuobiao);
+           
+        //huizhiguidao
+        let guiji=new PIXI.Graphics();
+        guiji.lineStyle(0.5,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
+        guiji.beginFill(0x000000,0)
+        //guiji.arc(0,0,he*100,0,jizuobiao+Math.PI/2)
+        guiji.circle(0,0,he*100);
+        guiji.endFill();    
+        planetLayer.addChild(guiji);
 
-        newg.circle(rendx,rendy,plt.radius*5);
+
+        let planet=new PIXI.Graphics();
+        planet.fill(plt.color)
+        planet.circle(rendx,rendy,plt.radius);
+        planet.endFill();
+        planetLayer.addChild(planet);
     }
+    
 
-    newg.endFill();
-    planetLayer.addChild(newg);
 }
 
 

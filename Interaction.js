@@ -209,6 +209,7 @@ function intostar(x,y){
 
 
 function click_(event){
+    if(now_view=='planet'){return}
     if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
     let clpos=event.getLocalPosition(mapLayer);
     //console.log(clpos.x,clpos.y);
@@ -238,8 +239,12 @@ window.addEventListener('mousedown', (event) => {
         if(st){
             now_view='planet'
             planetLayer.visible=true
+            //juzhong
+            planetLayer.x=app.screen.width/2
+            planetLayer.y=app.screen.height/2
             mapLayer.visible=false
             console.log('into planet',st)
+
             rend_planet(st)
         }
     }
