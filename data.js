@@ -104,8 +104,8 @@ function temperatureToRGB(temp) {
 
 function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5,id) {
     const orbits = [];
-    
-    // 生成幂律分布的初始候选轨道（范围[minAU, maxAU]）
+    const pj=(minAU+maxAU)/planetCount
+    /*/ 生成幂律分布的初始候选轨道（范围[minAU, maxAU]）
     for (let i = 0; i < planetCount; i++) {
         // 生成[0,1)均匀随机数，转换为幂律分布（指数-1.5）
         const u = rand([id,i],0,1,true);
@@ -114,9 +114,12 @@ function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5
         // 将幂律值映射到[minAU, maxAU]范围（需归一化）
         const a = minAU + (maxAU - minAU) * (1 - Math.pow(powerLawValue, -2/3)); // 修正映射公式
         orbits.push(Math.floor(a*100)/100);
+    }*/
+    for (let i = 1; i < planetCount+1; i++) {
+        
+        const he=rand([id,i],pj*i*0.5,pj*i*1.5,true)
+        orbits.push(he)
     }
-    
-    // 按轨道距离排序
     return orbits.sort((a, b) => a - b);
 }
 function creat_star(bx,by,x,y,i){

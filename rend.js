@@ -189,7 +189,7 @@ export function rend_planet(data){
            
         //huizhiguidao
         let guiji=new PIXI.Graphics();
-        guiji.lineStyle(0.5,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
+        guiji.lineStyle(1,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
         guiji.beginFill(0x000000,0)
         //guiji.arc(0,0,he*100,0,jizuobiao+Math.PI/2)
         guiji.circle(0,0,he*100);

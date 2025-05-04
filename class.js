@@ -71,7 +71,7 @@ export function rand(seed, min = 0, max = 1, isFloat = false) {
     if (isFloat) {
         return randomValue * (max - min) + min;
     } else {
-        return Math.floor(randomValue * (max - min + 1)) + min;
+        return Math.floor(randomValue * (max - min + 1) + min);
     }
 }
 export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = -Infinity, max = Infinity, maxRetries = 3) {
