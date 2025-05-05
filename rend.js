@@ -50,15 +50,16 @@ function rend_block(list,bx,by){
 
         rend_star(x,y,rendstargroup,list[i].star);
     }
-    rendstargroup.endFill();
+    //rendstargroup.endFill();
     mapLayer.addChild(rendstargroup);
 }
 
 function rend_star(x,y,star,obj){
     
     star.fill(obj.color);
-    star.circle(x,y,10);
     
+    star.circle(x,y,10);
+    star.endFill();
     
 }
     
@@ -171,9 +172,10 @@ function rend_bolcks(){
 export function rend_planet(data){
     //star
     planetLayer.removeChildren();
-
+    
     let st=data.star;
     let star=new PIXI.Graphics();
+    console.log(st.color,st.radius)
     star.fill(st.color)
     star.circle(0,0,st.radius*2);
     star.endFill();
@@ -186,10 +188,10 @@ export function rend_planet(data){
         let jizuobiao=rand([st.posid,he,1],0,2*Math.PI)
         let rendx=he*100*Math.cos(jizuobiao);
         let rendy=he*100*Math.sin(jizuobiao);
-           
+        console.log(he,jizuobiao,rendx,rendy)
         //huizhiguidao
         let guiji=new PIXI.Graphics();
-        guiji.lineStyle(1,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
+        guiji.lineStyle(1.5,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
         guiji.beginFill(0x000000,0)
         //guiji.arc(0,0,he*100,0,jizuobiao+Math.PI/2)
         guiji.circle(0,0,he*100);

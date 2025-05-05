@@ -197,7 +197,7 @@ function intostar(x,y){
     if(block){
         for(let st of block.block){
             let pos={x:st.star.x,y:st.star.y}
-            if(Math.abs(pos.x-x)<50&&Math.abs(pos.y-y)<50){
+            if(Math.abs(pos.x-x)<20&&Math.abs(pos.y-y)<20){
                 //console.log("click star",st);
                 //st.click();
                 return st;
