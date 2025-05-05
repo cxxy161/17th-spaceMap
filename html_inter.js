@@ -67,6 +67,7 @@ export function chose_star(st){
     for(let key of Object.keys(st.star)){
         let fkey
         if(key in fanyi_key){fkey=fanyi_key[key]}
+        
         else{fkey=key}
         let value=fkey+'：'+st.star[key]
         info_conve.innerHTML+=value+'<br>'
@@ -83,10 +84,14 @@ export function close_planet(pl){
     //else{input_star_name.value=""}
     
     for(let key of Object.keys(pl)){
-        let fkey
+        let fkey,valu
         if(key in fanyi_key){fkey=fanyi_key[key]}
         else{fkey=key}
-        let value=fkey+'：'+pl[key]
+        if (typeof pl[key]=='object'){
+            valu=JSON.stringify(pl[key])
+        }
+        else{valu=pl[key]}
+        let value=fkey+'：'+valu
         info_conve.innerHTML+=value+'<br>'
     }
 }

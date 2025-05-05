@@ -64,3 +64,9 @@ body {
     padding: 5px 12px;
     cursor: pointer;
 }
+
+#star_info{
+    width: 300px; /* 设置一个具体的宽度 */
+    word-wrap: break-word; /* 或者 overflow-wrap: break-word; */
+    white-space: normal; /* 默认值，允许自动换行 */
+}

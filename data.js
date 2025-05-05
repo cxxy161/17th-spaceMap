@@ -360,7 +360,7 @@ const planet_type={
     '气态巨星':{
         'rou':[0.5,1.5],
         'rad':[5,12],
-        'mass':[50,3000]
+        'mass':[50,1000]
     },
 }
 const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3','o3']
@@ -372,7 +372,7 @@ export function creat_planet(stid,heigh,st){
     let mass=rand([numid,2],planet_type[type].mass[0],planet_type[type].mass[1],true)//倍地球质量
     let radius=rand([numid,3],planet_type[type].rad[0],planet_type[type].rad[1],true)//倍地球半径
     let rou=mass/radius**3*4//平均密度
-    let g=6.674e-11*(mass*6e24/((radius*6371)**2))//重力加速度
+    let g=9.81*(mass/(radius)**2)//重力加速度
 
     let jizuobiao=rand([stid,heigh,11],-Math.PI,Math.PI,true)
 
