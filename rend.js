@@ -184,10 +184,19 @@ export function rend_planet(data){
     
     
     for(let he of st.planets){
-        let plt=creat_planet(st.posid,he,st)
-        let jizuobiao=rand([st.posid,he,1],0,2*Math.PI)
-        let rendx=he*100*Math.cos(jizuobiao);
-        let rendy=he*100*Math.sin(jizuobiao);
+        //let plt=
+        //if(!data.planet){
+         let plt=creat_planet(st.posid,he,st)
+            //console.log(data)
+            data.planet.push(plt)
+        //}
+        //else{
+        //    plt=data.planets.find(p=>p.heigh==he)
+        //}
+        
+        const jizuobiao=plt.anglepos
+        const rendx=he*100*Math.cos(jizuobiao);
+        const rendy=he*100*Math.sin(jizuobiao);
         //console.log(he,jizuobiao,rendx,rendy)
         //huizhiguidao
         let guiji=new PIXI.Graphics();

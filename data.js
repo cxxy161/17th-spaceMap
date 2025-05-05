@@ -374,6 +374,7 @@ export function creat_planet(stid,heigh,st){
     let rou=mass/radius**3*4//平均密度
     let g=6.674e-11*(mass*6e24/((radius*6371)**2))//重力加速度
 
+    let jizuobiao=rand([stid,heigh,11],-Math.PI,Math.PI,true)
 
     let air=generateAtmosphere(type,mass,heigh)
     let color=getPlanetColor(air)
@@ -389,6 +390,8 @@ export function creat_planet(stid,heigh,st){
     return {
         'mass':mass,
         'radius':radius,
+        'anglepos':jizuobiao,
+        'heigh':heigh,
         'rou':rou,
         'g':g,
         'type':type,
@@ -468,7 +471,7 @@ export function getblock(x, y) {
         let geshi={
             star:creat_star(x,y,st[0],st[1],i),
             data:null,
-            planet:null
+            planet:[]
         }
         stardata.push(geshi);
     }

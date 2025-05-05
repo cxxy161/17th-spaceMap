@@ -1,6 +1,6 @@
 import { app,beload,mapLayer,planetLayer} from "./main.js";
 import { check_new_bolck, rend_planet } from "./rend.js";
-import { chose_star } from "./html_inter.js";
+import { chose_star,close_planet } from "./html_inter.js";
 
 app.stage.interactive = true;
 app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
@@ -207,16 +207,37 @@ function intostar(x,y){
     return null;
 }
 
-
+let now_star=null;
 function click_(event){
-    if(now_view=='planet'){return}
-    if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
-    let clpos=event.getLocalPosition(mapLayer);
-    //console.log(clpos.x,clpos.y);
-    let st=intostar(clpos.x,clpos.y);
-    if(st){
-        chose_star(st);
+    if(now_view=='planet'){
+        let clpos=event.getLocalPosition(planetLayer)
+        if(Math.abs(clpos.x)<50&&Math.abs(clpos.y)<50){
+            chose_star(now_star)
+        }
+        else{
+            const r=Math.sqrt(clpos.x*clpos.x+clpos.y*clpos.y)
+            const angle=Math.atan2(clpos.y,clpos.x)
+            //const anchos=angle*180/Math.PI
+            for(let pl of now_star.planet){
+                //console.log(pl.anglepos,angle,Math.abs(pl.anglepos-angle),Math.abs(pl.heigh*100-r))
+                if(Math.abs(pl.anglepos-angle)<0.5 && Math.abs(pl.heigh*100-r)<50){
+                    close_planet(pl)
+                }
+            }
+
+        }
     }
+    else{
+        if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
+        let clpos=event.getLocalPosition(mapLayer);
+        //console.log(clpos.x,clpos.y);
+        let st=intostar(clpos.x,clpos.y);
+        if(st){
+            
+            chose_star(st);
+        }
+    }
+    
 }
 
 let now_view='map'
@@ -244,7 +265,7 @@ window.addEventListener('mousedown', (event) => {
             planetLayer.y=app.screen.height/2
             mapLayer.visible=false
             console.log('into planet',st)
-
+            now_star=st;
             rend_planet(st)
         }
     }

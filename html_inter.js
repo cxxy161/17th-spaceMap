@@ -43,6 +43,13 @@ var fanyi_key={
     'gravity':'重力',
     'escape_velocity':'逃逸速度',
     'description':'描述',
+    'anglepos':'角度',
+    'color':'颜色',
+    'heigh':'轨道高度',
+    'rou':'平均密度',
+    'g':'重力加速度',
+    'air':'大气成分',
+
 
 }
 export function chose_star(st){
@@ -51,7 +58,7 @@ export function chose_star(st){
     console.log("click star",st);
     info_fa_back.style.display = "block"
     info_conve.innerHTML=""
-    console.log(st.star.posid,datalist,st.star.posid in datalist)
+    //console.log(st.star.posid,datalist,st.star.posid in datalist)
     if(st.star.posid in datalist){st.data=datalist[st.star.posid]}
 
     if(st.data){input_star_name.value=st.data.name}
@@ -66,9 +73,30 @@ export function chose_star(st){
     }
 }
 
+export function close_planet(pl){
+    now_star=pl
+    console.log("click planetr",pl);
+    info_fa_back.style.display = "block"
+    info_conve.innerHTML=""
+    //if(st.star.posid in datalist){st.data=datalist[st.star.posid]}
+    //if(pl.data){input_star_name.value=pl.data.name}
+    //else{input_star_name.value=""}
+    
+    for(let key of Object.keys(pl)){
+        let fkey
+        if(key in fanyi_key){fkey=fanyi_key[key]}
+        else{fkey=key}
+        let value=fkey+'：'+pl[key]
+        info_conve.innerHTML+=value+'<br>'
+    }
+}
+
 let input_star_name=document.getElementById("star_name_input");
 let input_star_remark=document.getElementById("star_remark_input");
 document.getElementById("input_save").addEventListener("click", function() {
+    if(!now_star){
+        return
+    }
     let name=input_star_name.value;
     let remark=input_star_remark.value;
     let saves={}
