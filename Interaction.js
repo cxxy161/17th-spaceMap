@@ -227,7 +227,7 @@ window.addEventListener('keydown', (event) => {
         now_view='map'
         planetLayer.visible=false
         mapLayer.visible=true
-        console.log('into map')
+        //console.log('into map')
         
     }
 });

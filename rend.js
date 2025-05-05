@@ -175,7 +175,7 @@ export function rend_planet(data){
     
     let st=data.star;
     let star=new PIXI.Graphics();
-    console.log(st.color,st.radius)
+    //console.log(st.color,st.radius)
     star.fill(st.color)
     star.circle(0,0,st.radius*2);
     star.endFill();
@@ -188,7 +188,7 @@ export function rend_planet(data){
         let jizuobiao=rand([st.posid,he,1],0,2*Math.PI)
         let rendx=he*100*Math.cos(jizuobiao);
         let rendy=he*100*Math.sin(jizuobiao);
-        console.log(he,jizuobiao,rendx,rendy)
+        //console.log(he,jizuobiao,rendx,rendy)
         //huizhiguidao
         let guiji=new PIXI.Graphics();
         guiji.lineStyle(1.5,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
@@ -201,7 +201,7 @@ export function rend_planet(data){
 
         let planet=new PIXI.Graphics();
         planet.fill(plt.color)
-        planet.circle(rendx,rendy,plt.radius);
+        planet.circle(rendx,rendy,plt.radius*1.5);
         planet.endFill();
         planetLayer.addChild(planet);
     }

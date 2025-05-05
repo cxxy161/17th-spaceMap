@@ -67,9 +67,9 @@ function classifyStarWithColor(age, temperature, radius, mass) {
     // (b) 计算RGB（若为红巨星/红超巨星，覆盖为红色）
     let rgb;
     if (evolutionaryStage.includes("红")) {
-        rgb = "rgb(255, 100, 0)"; // 橙红色
+        rgb = "rgb(255, 49, 22)"; // 橙红色
     } else if (isBlueGiant) {
-        rgb = "rgb(150, 200, 255)"; // 亮蓝色
+        rgb = "rgb(188, 220, 253)"; // 亮蓝色
     } else {
         rgb = temperatureToRGB(temperature);
     }
@@ -100,6 +100,182 @@ function temperatureToRGB(temp) {
     }
 
     return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+}
+function getstarcolor(type,tem){
+    
+}
+
+function generateAtmosphere(planetType, mass, orbitRadius, starType = "G") {
+    // 定义各行星类型的大气成分可能性
+    const atmosphereTemplates = {
+        // 类地行星（岩石，可能含CO2/N2/O2）
+        "类地行星": {
+            possibleGases: ["CO2", "N2", "O2", "H2O", "SO2", "Ar"],
+            constraints: {
+                CO2: { min: 0, max: 96 }, // 金星CO2占96%
+                N2: { min: 0, max: 78 },  // 地球N2占78%
+                O2: { min: 0, max: 21 },  // 地球O2占21%
+                H2O: { min: 0, max: 5 },  // 水蒸气（可变）
+                SO2: { min: 0, max: 0.1 }, // 火山气体
+                Ar: { min: 0, max: 2 }    // 惰性气体
+            },
+            // 质量>0.5地球才可能保留大气
+            requireMinimumMass: 0.5,
+            // 轨道太近（<0.5AU）可能失去大气
+            loseAtmosphereIfTooClose: 0.5
+        },
+        // 超级地球（可能厚H2O/CO2或H2/He）
+        "超级地球": {
+            possibleGases: ["CO2", "N2", "H2O", "H2", "He", "CH4"],
+            constraints: {
+                CO2: { min: 0, max: 50 },
+                N2: { min: 0, max: 30 },
+                H2O: { min: 0, max: 40 }, // 海洋行星可能高H2O
+                H2: { min: 0, max: 20 },  // 迷你海王星特征
+                He: { min: 0, max: 10 },
+                CH4: { min: 0, max: 5 }
+            },
+            // 质量>2地球可能保留H2/He
+            hydrogenRichIfMassOver: 2
+        },
+        // 气态巨行星（H2/He主导）
+        "气态巨星": {
+            possibleGases: ["H2", "He", "CH4", "NH3", "H2O", "CO"],
+            constraints: {
+                H2: { min: 75, max: 95 },  // 主要成分
+                He: { min: 5, max: 25 },
+                CH4: { min: 0, max: 2 },   // 低温下CH4增多
+                NH3: { min: 0, max: 1 },
+                H2O: { min: 0, max: 1 },
+                CO: { min: 0, max: 0.5 }   // 高温下CO增多
+            },
+            // 热木星（<0.1AU）可能含金属氧化物
+            hotJupiterAdditions: {
+                gases: ["TiO", "VO"],
+                maxPercent: 0.1
+            }
+        },
+        // 冰巨星（H2O/CH4/NH3混合）
+        "冰巨星": {
+            possibleGases: ["H2", "He", "CH4", "H2O", "NH3", "H2S"],
+            constraints: {
+                H2: { min: 60, max: 80 },
+                He: { min: 10, max: 20 },
+                CH4: { min: 1, max: 5 },  // 天王星/海王星CH4占1-2%
+                H2O: { min: 0, max: 3 },
+                NH3: { min: 0, max: 2 },
+                H2S: { min: 0, max: 1 }
+            }
+        }
+    };
+
+    // 检查行星类型是否有效
+    if (!atmosphereTemplates[planetType]) {
+        throw new Error(`未知的行星类型: ${planetType}`);
+    }
+
+    const template = atmosphereTemplates[planetType];
+    const atmosphere = {};
+
+    // --- 特殊规则覆盖 ---
+    // 1. 类地行星质量过低或轨道太近则无大气
+    if (planetType === "类地行星") {
+        if (mass < template.requireMinimumMass || orbitRadius < template.loseAtmosphereIfTooClose) {
+            return { "No atmosphere": 100 }; // 返回无大气
+        }
+    }
+
+    // 2. 超级地球质量较大时可能含H2/He（迷你海王星）
+    if (planetType === "超级地球" && mass > template.hydrogenRichIfMassOver) {
+        template.constraints.H2.max = 50; // 提高H2上限
+        template.constraints.He.max = 20;
+    }
+
+    // 3. 热木星（气态巨行星且轨道<0.1AU）添加金属氧化物
+    if (planetType === "气态巨星" && orbitRadius < 0.1 && template.hotJupiterAdditions) {
+        template.possibleGases.push(...template.hotJupiterAdditions.gases);
+        template.constraints.TiO = { min: 0, max: template.hotJupiterAdditions.maxPercent };
+        template.constraints.VO = { min: 0, max: template.hotJupiterAdditions.maxPercent };
+    }
+
+    // --- 随机生成各气体百分比 ---
+    let remainingPercent = 100;
+    const gases = [...template.possibleGases];
+
+    // 随机打乱气体顺序，避免总是优先分配某些成分
+    gases.sort(() => rand([planetType, mass, orbitRadius,1],0,1,true) - 0.5);
+
+    for (let i = 0; i < gases.length; i++) {
+        const gas = gases[i];
+        const { min, max } = template.constraints[gas] || { min: 0, max: 0 };
+
+        if (remainingPercent <= 0) break;
+
+        // 计算当前气体的可能范围
+        const currentMax = Math.min(max, remainingPercent);
+        let percent = 0;
+
+        if (currentMax > min) {
+            percent = rand([planetType, mass, orbitRadius,2],0,1,true) * (currentMax - min) + min;
+            percent = parseFloat(percent.toFixed(2)); // 保留两位小数
+            remainingPercent -= percent;
+        }
+
+        if (percent > 0) {
+            atmosphere[gas] = percent;
+        }
+    }
+
+    // 如果剩余百分比未分配完，分配给主要成分
+    if (remainingPercent > 0) {
+        const mainGas = template.possibleGases[0]; // 第一个气体通常是主要成分
+        atmosphere[mainGas] = (atmosphere[mainGas] || 0) + parseFloat(remainingPercent.toFixed(2));
+    }
+
+    return atmosphere;
+}
+
+function getPlanetColor(atmosphere) {
+    // 默认颜色（无大气或未知）
+    let color = { r: 100, g: 100, b: 100 }; // 灰色
+
+    // 颜色贡献规则
+    const colorRules = {
+        H2: { r: 0, g: 50, b: 200 },   // 深蓝
+        He: { r: 0, g: 100, b: 150 },   // 蓝绿
+        CH4: { r: 0, g: 150, b: 100 },  // 蓝绿（甲烷主导）
+        CO2: { r: 200, g: 200, b: 100 },// 淡黄（高CO2）
+        H2O: { r: 180, g: 220, b: 255 },// 淡蓝（水云）
+        N2: { r: 150, g: 150, b: 200 }, // 浅蓝（地球式）
+        SO2: { r: 240, g: 230, b: 100 },// 淡黄（硫酸云）
+        TiO: { r: 50, g: 50, b: 50 },   // 暗灰
+        VO: { r: 70, g: 40, b: 40 },    // 红灰
+        H2S: { r: 160, g: 120, b: 60 } // 棕黄
+    };
+
+    // 加权混合颜色
+    let total = 0;
+    let mixed = { r: 0, g: 0, b: 0 };
+
+    for (const gas in atmosphere) {
+        if (colorRules[gas] && atmosphere[gas] > 0) {
+            const percent = atmosphere[gas] / 100;
+            mixed.r += colorRules[gas].r * percent;
+            mixed.g += colorRules[gas].g * percent;
+            mixed.b += colorRules[gas].b * percent;
+            total += percent;
+        }
+    }
+
+    // 归一化并处理无数据情况
+    if (total > 0) {
+        color.r = Math.round(mixed.r / total);
+        color.g = Math.round(mixed.g / total);
+        color.b = Math.round(mixed.b / total);
+    }
+
+    // 转换为CSS颜色
+    return `rgb(${color.r}, ${color.g}, ${color.b})`;
 }
 
 function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5,id) {
@@ -187,25 +363,37 @@ const planet_type={
         'mass':[50,3000]
     },
 }
-const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3']
+const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3','o3']
 
 
 export function creat_planet(stid,heigh,st){
     let numid=hash([stid,heigh])
     let type=Object.keys(planet_type)[Math.floor(rand([numid,1],0,3))]
-    let mass=rand([numid,2],planet_type[type].mass[0],planet_type[type].mass[1])//倍地球质量
-    let radius=rand([numid,3],planet_type[type].rad[0],planet_type[type].rad[1])//倍地球半径
+    let mass=rand([numid,2],planet_type[type].mass[0],planet_type[type].mass[1],true)//倍地球质量
+    let radius=rand([numid,3],planet_type[type].rad[0],planet_type[type].rad[1],true)//倍地球半径
     let rou=mass/radius**3*4//平均密度
-    let g=6.674e-11*mass/(radius**2)//重力加速度
+    let g=6.674e-11*(mass*6e24/((radius*6371)**2))//重力加速度
 
 
+    let air=generateAtmosphere(type,mass,heigh)
+    let color=getPlanetColor(air)
+    console.log({
+        'mass':mass,
+        'radius':radius,
+        'rou':rou,
+        'g':g,
+        'type':type,
+        'air':air,
+        'color':color,
+    })
     return {
         'mass':mass,
         'radius':radius,
         'rou':rou,
         'g':g,
         'type':type,
-        'color':'rgb(255,255,255)'
+        'air':air,
+        'color':color,
     }
 }
 
