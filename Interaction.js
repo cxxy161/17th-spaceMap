@@ -40,11 +40,11 @@ app.stage
     pointerStartPosition.x = event.global.x;
     pointerStartPosition.y = event.global.y;
     isDragging = false;
-    
+
     let layer = which();
-      dragStart.x = event.data.global.x - layer.x;
-      dragStart.y = event.data.global.y - layer.y;
-      layer.dragging = true;
+    dragStart.x = event.global.x - layer.x;
+    dragStart.y = event.global.y - layer.y;
+    layer.dragging = true;  
   })
   .on('pointermove', (event) => {
     event.preventDefault();
@@ -60,56 +60,65 @@ app.stage
     }
     
     const activePointers = Object.keys(onTouchPointerIds).length;
-    
     if (activePointers === 1) {
-      // 单指拖动逻辑
-      const dx = event.global.x - pointerStartPosition.x;
-      const dy = event.global.y - pointerStartPosition.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      if (distance > 10) {
-        isDragging = true;
-        onDragMove(event);
-      }
-    } else if (activePointers === 2) {
+        if (lastTowPoinDistance !== null && isDragging) {
+            // 如果刚结束双指缩放且正在拖动，暂时不处理单指移动
+            return;
+          }
+          
+          // 正常单指拖动逻辑
+          const layer = which();
+          if (layer.dragging) {
+            layer.x = event.global.x - dragStart.x;
+            layer.y = event.global.y - dragStart.y;
+            layer.lastdrag = Date.now();
+            check_new_bolck();
+          }
+      } 
+    else if (activePointers === 2) {
       // 双指缩放/旋转逻辑
       const [p1, p2] = Object.values(onTouchPointerIds);
       
-      // 计算中心点
-      const centerPoint = new PIXI.Point(
+      // 计算当前中心点（使用全局坐标）
+      const currentCenter = new PIXI.Point(
         (p1.x + p2.x) / 2,
         (p1.y + p2.y) / 2
       );
       
       // 计算双指距离
-      const distance = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+      const currentDistance = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
       
       if (!lastTowPoinDistance) {
-        lastTowPoinDistance = distance;
-        lastCenterPoint = centerPoint;
-        lastDirect = new PIXI.Point(p2.x - p1.x, p2.y - p1.y);
+        lastTowPoinDistance = currentDistance;
+        lastCenterPoint = currentCenter;  // 存储初始中心点
         return;
       }
       
-      // 缩放处理
-      const step = distance / lastTowPoinDistance;
-      lastTowPoinDistance = distance;
-      
       const layer = which();
-      const newScale = layer.scale.x * step;
+      
+      // 计算缩放比例
+      const scaleFactor = currentDistance / lastTowPoinDistance;
+      const newScale = layer.scale.x * scaleFactor;
       
       // 限制缩放范围
       const minScale = 0.2;
       const maxScale = 5;
       if (newScale < minScale || newScale > maxScale) return;
       
+      // 计算中心点在layer坐标系中的位置（相对于缩放前的坐标系）
+      const centerInLayerX = (lastCenterPoint.x - layer.x) / layer.scale.x;
+      const centerInLayerY = (lastCenterPoint.y - layer.y) / layer.scale.y;
+      
+      // 应用新缩放
       layer.scale.set(newScale);
       
-      // 调整位置使中心点保持不变
-      const mouseInMapX = (centerPoint.x - layer.x) / layer.scale.x;
-      const mouseInMapY = (centerPoint.y - layer.y) / layer.scale.y;
-      layer.x = centerPoint.x - mouseInMapX * newScale;
-      layer.y = centerPoint.y - mouseInMapY * newScale;
+      // 调整位置使中心点保持不变（关键修正）
+      layer.x = currentCenter.x - centerInLayerX * newScale;
+      layer.y = currentCenter.y - centerInLayerY * newScale;
+      
+      // 更新状态为下一次移动做准备
+      lastTowPoinDistance = currentDistance;
+      lastCenterPoint = currentCenter;
       
       check_new_bolck();
     }
@@ -120,19 +129,37 @@ app.stage
     // 移除触控点
     delete onTouchPointerIds[event.pointerId];
     
-    // 重置双指状态
-    if (Object.keys(onTouchPointerIds).length < 2) {
+    const activePointers = Object.keys(onTouchPointerIds).length;
+    
+    if (activePointers === 1) {
+      // 当双指变单指时，重置拖动状态但不立即启用单指拖动
+      const layer = which();
+      layer.dragging = false;
+      
+      // 更新dragStart为当前手指位置
+      const remainingPointer = Object.values(onTouchPointerIds)[0];
+      dragStart.x = remainingPointer.x - layer.x;
+      dragStart.y = remainingPointer.y - layer.y;
+    } 
+    else if (activePointers === 0) {
+      // 完全结束操作时才重置所有状态
       lastTowPoinDistance = null;
       lastCenterPoint = null;
-      lastDirect = null;
-    }
+      
+      const layer = which();
+      layer.dragging = false;
+      const timeElapsed = Date.now() - pointerStartTime;
+      const dx = event.global.x - pointerStartPosition.x;
+      const dy = event.global.y - pointerStartPosition.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (!isDragging && timeElapsed < 300 && distance < 50) {
+        //alert(1)
+        handleClick(event);
+      }
+      isDragging = false;
     
-    // 处理点击事件
-    if (!isDragging && Date.now() - pointerStartTime < 300) {
-      handleClick(event);
     }
-    
-    isDragging = false;
   })
   .on('pointerupoutside', () => {
     // 重置状态
@@ -196,26 +223,37 @@ function onDragMove(event) {
     check_new_bolck();
   }
 
-function onPinchStart(event) {
+  function onPinchStart(event) {
     const touches = getTouches(event);
     if (!touches || touches.length < 2) return;
     
     let layer = which();
     
+    // 修改这里 - 使用正确的全局坐标计算
+    const touch1 = getGlobalTouchPosition(touches[0]);
+    const touch2 = getGlobalTouchPosition(touches[1]);
+    
     // 计算两个触摸点之间的距离
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
+    const dx = touch1.x - touch2.x;
+    const dy = touch1.y - touch2.y;
     initialDistance = Math.sqrt(dx * dx + dy * dy);
     
     // 存储初始缩放和位置
     initialScale = layer.scale.x;
-    initialPosition.x = (touches[0].clientX + touches[1].clientX) / 2;
-    initialPosition.y = (touches[0].clientY + touches[1].clientY) / 2;
+    initialPosition.x = (touch1.x + touch2.x) / 2;
+    initialPosition.y = (touch1.y + touch2.y) / 2;
     
     // 停止拖动
     layer.dragging = false;
 }
 
+function getGlobalTouchPosition(touch) {
+    // 对于移动端，使用触摸事件的页面坐标
+    return {
+        x: touch.pageX - app.view.getBoundingClientRect().left,
+        y: touch.pageY - app.view.getBoundingClientRect().top
+    };
+}
 // 双指缩放的移动处理
 function onPinchMove(event) {
     if (!initialDistance) return;
@@ -225,9 +263,13 @@ function onPinchMove(event) {
     
     let layer = which();
     
+    // 修改这里 - 使用正确的全局坐标计算
+    const touch1 = getGlobalTouchPosition(touches[0]);
+    const touch2 = getGlobalTouchPosition(touches[1]);
+    
     // 计算当前两个触摸点之间的距离
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
+    const dx = touch1.x - touch2.x;
+    const dy = touch1.y - touch2.y;
     const currentDistance = Math.sqrt(dx * dx + dy * dy);
     
     // 计算缩放比例
@@ -238,9 +280,9 @@ function onPinchMove(event) {
     const maxScale = 5;
     const clampedScale = Math.min(Math.max(scale, minScale), maxScale);
     
-    // 计算中心点位置
-    const centerX = (touches[0].clientX + touches[1].clientX) / 2;
-    const centerY = (touches[0].clientY + touches[1].clientY) / 2;
+    // 计算中心点位置（使用全局坐标）
+    const centerX = (touch1.x + touch2.x) / 2;
+    const centerY = (touch1.y + touch2.y) / 2;
     
     // 计算中心点在 layer 坐标系中的位置
     const mouseInMapX = (centerX - layer.x) / layer.scale.x;
@@ -255,6 +297,7 @@ function onPinchMove(event) {
     
     check_new_bolck();
 }
+
 
 export function movecamera(x,y){
     // 移动地图层到指定位置
@@ -286,6 +329,7 @@ function intostar(x,y){
 
 let now_star=null;
 function handleClick(event) {
+    
     if (now_view === 'planet') {
         const clpos = getClickPosition(event, planetLayer);
         
@@ -307,9 +351,7 @@ function handleClick(event) {
         }
     } else {
         // 地图视图
-        if (mapLayer.lastdrag && Date.now() - mapLayer.lastdrag < 500) {
-            return;
-        }
+        
         
         const clpos = getClickPosition(event, mapLayer);
         const st = intostar(clpos.x, clpos.y);
