@@ -2,6 +2,7 @@ body {
     margin: 0;
     padding: 0;
     touch-action: none;
+    position: fixed;
     font-family: 'Arial', sans-serif; /* 更改字体 */
     background: linear-gradient(to bottom, #f0f8ff, #e6e6fa); /* 背景颜色渐变 */
 }
