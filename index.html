@@ -7,14 +7,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="pos_go">
-        <input type="text" id="pos_input" placeholder="请输入坐标(如：0,0)" />
-        <button id="go_btn">Go</button>
-    </div>
-    <div id="map_ui">
-        <button id="put_data">导出地图</button>
-        <input type="text" id="map_data_input" placeholder="请输入地图" />
-        <button id="get_map_data">导入地图</button>
+    <div class="header">
+        <div id="pos_go">
+            <input type="text" id="pos_input" placeholder="请输入坐标(如：0/0或恒星坐标id)" />
+            <button id="go_btn">Go</button>
+        </div>
+        <div id="map_ui">
+            <button id="put_data">导出地图</button>
+            <input type="text" id="map_data_input" placeholder="请输入地图" />
+            <button id="get_map_data">导入地图</button>
+        </div>
     </div>
     <div id="infomation">
             <button id="close_btn">关闭</button>
@@ -27,8 +29,10 @@
                     <input type="text" id="star_remak_input" placeholder="请输入备注" />
                     <button id="input_save">保存</button>
             </div>
-        
+            <button id="intostar">进入星系</button>
+            <button id="out_star">退出星体</button>
     </div>
+    
     <div id="game-container"></div>
 
     <!-- 引入 Pixi.js 库 -->

@@ -1,4 +1,4 @@
-import {movecamera} from './Interaction.js';
+import {movecamera,inotsta,out_of_star} from './Interaction.js';
 import {posIdToXY} from './class.js';
 import {savedata} from './data.js';
 import { datalist } from './main.js';
@@ -151,4 +151,17 @@ document.getElementById("get_map_data").addEventListener("click", function() {
     console.log(data);
     //app.renderer.resize(window.innerWidth, window.innerHeight);
     //app.renderer.render(app.stage);
+})
+
+
+document.getElementById("intostar").addEventListener("click", function() {
+    inotsta(now_star)
+    now_star=null
+    info_fa_back.style.display = "none"
+})
+
+document.getElementById("out_star").addEventListener("click", function() {
+    out_of_star()
+    now_star=null
+    info_fa_back.style.display = "none"
 })

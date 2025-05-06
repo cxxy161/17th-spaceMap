@@ -11,84 +11,94 @@ let dragStart = { x: 0, y: 0 };
 let initialDistance = null;
 let initialScale = 1;
 let initialPosition = { x: 0, y: 0 };
+let pointerStartTime = 0;
+let pointerStartPosition = { x: 0, y: 0 };
+let isDragging = false;
 
-// 监听鼠标按下事件
-app.stage.on('mousedown', onDragStart)
-    .on('click', click_)
-    .on('touchstart', (event) => {
-        const touches = getTouches(event);
-        if (touches && touches.length >= 2) {
-            onPinchStart(event);
-        } else {
-            onDragStart(event);
+// 修改事件监听器
+app.stage.on('pointerdown', (event) => {
+    const touches = getTouches(event);
+    if (touches && touches.length >= 2) {
+        onPinchStart(event);
+    } else {
+        pointerStartTime = Date.now();
+        pointerStartPosition.x = event.data.global.x;
+        pointerStartPosition.y = event.data.global.y;
+        isDragging = false;
+        onDragStart(event);
+    }
+})
+.on('pointermove', (event) => {
+    const touches = getTouches(event);
+    if (touches && touches.length >= 2) {
+        onPinchMove(event);
+    } else {
+        // 检查是否开始拖动
+        const dx = event.data.global.x - pointerStartPosition.x;
+        const dy = event.data.global.y - pointerStartPosition.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // 如果移动距离超过阈值，认为是拖动
+        if (distance > 10) {
+            isDragging = true;
         }
-    })
-    .on('mouseup', onDragEnd)
-    .on('mouseupoutside', onDragEnd)
-    .on('touchend', (event) => {
-        const touches = getTouches(event);
-        if (!touches || touches.length < 2) {
-            onDragEnd();
-            initialDistance = null;
+        
+        onDragMove(event);
+    }
+})
+.on('pointerup', (event) => {
+    const touches = getTouches(event);
+    if (!touches || touches.length < 2) {
+        onDragEnd();
+        initialDistance = null;
+        
+        // 如果不是拖动，则处理为点击
+        if (!isDragging) {
+            const pointerEndTime = Date.now();
+            const pointerDuration = pointerEndTime - pointerStartTime;
+            
+            // 确保是短时间的点击（小于300ms）
+            if (pointerDuration < 300) {
+                handleClick(event);
+            }
         }
-    })
-    .on('touchendoutside', onDragEnd)
-    .on('mousemove', onDragMove)
-    .on('touchmove', (event) => {
-        const touches = getTouches(event);
-        if (touches && touches.length >= 2) {
-            onPinchMove(event);
-        } else {
-            onDragMove(event);
-        }
-    })
-    .on('wheel', onWheel);
+    }
+})
+.on('pointerupoutside', onDragEnd)
+.on('wheel', onWheel);
 
-// 添加这个辅助函数来安全地获取触摸点
-function getTouches(event) {
-    // 尝试不同的方式获取触摸点，兼容不同浏览器和PIXI版本
-    return event.data.originalEvent?.touches || 
-           event.data.touches || 
-           event.touches || 
-           [];
+// 添加 which 函数定义
+function which() {
+    if (now_view === 'map') {
+        return mapLayer;
+    } else if (now_view === 'planet') {
+        return planetLayer;
+    }
+    return mapLayer; // 默认返回 mapLayer
 }
 
-function which(){
-    if(now_view=='map'){return mapLayer}
-    else if(now_view=='planet'){return planetLayer}
-}
-
+// 修改拖动相关函数
 function onDragStart(event) {
-    let layer=which();
-    // 存储鼠标按下时的位置
-    //console.log(event.data.global.x,event.data.global.y);
+    let layer = which();
     layer.dragging = true;
     dragStart.x = event.data.global.x - layer.x;
     dragStart.y = event.data.global.y - layer.y;
 }
 
 function onDragEnd() {
-    // 移除鼠标移动事件监听
-    let layer=which();
-
+    let layer = which();
     layer.dragging = false;
-    
-    //mapLayer.eventMode = 'static';
+    isDragging = false;
 }
 
 function onDragMove(event) {
-    let layer=which();
-
-    // 如果正在拖动地图层
+    let layer = which();
     if (layer.dragging) {
         layer.x = event.data.global.x - dragStart.x;
         layer.y = event.data.global.y - dragStart.y;
         layer.lastdrag = Date.now();
-        //mapLayer.eventMode = 'dynamic'; // 或者使用 deprecated 的 mapLayer.interactive = false;
-        check_new_bolck(); 
+        check_new_bolck();
     }
-    // 更新地图层的位置
-    
 }
 
 function onWheel(event) {
@@ -122,7 +132,10 @@ function onWheel(event) {
 }
 
 function onPinchStart(event) {
-    const touches = event.data.originalEvent.touches;
+    const touches = getTouches(event);
+    if (!touches || touches.length < 2) return;
+    
+    let layer = which();
     
     // 计算两个触摸点之间的距离
     const dx = touches[0].clientX - touches[1].clientX;
@@ -130,19 +143,22 @@ function onPinchStart(event) {
     initialDistance = Math.sqrt(dx * dx + dy * dy);
     
     // 存储初始缩放和位置
-    initialScale = mapLayer.scale.x;
+    initialScale = layer.scale.x;
     initialPosition.x = (touches[0].clientX + touches[1].clientX) / 2;
     initialPosition.y = (touches[0].clientY + touches[1].clientY) / 2;
     
     // 停止拖动
-    mapLayer.dragging = false;
+    layer.dragging = false;
 }
 
 // 双指缩放的移动处理
 function onPinchMove(event) {
     if (!initialDistance) return;
     
-    const touches = event.data.originalEvent.touches;
+    const touches = getTouches(event);
+    if (!touches || touches.length < 2) return;
+    
+    let layer = which();
     
     // 计算当前两个触摸点之间的距离
     const dx = touches[0].clientX - touches[1].clientX;
@@ -161,22 +177,19 @@ function onPinchMove(event) {
     const centerX = (touches[0].clientX + touches[1].clientX) / 2;
     const centerY = (touches[0].clientY + touches[1].clientY) / 2;
     
-    // 计算中心点在 mapLayer 坐标系中的位置
-    const mouseInMapX = (centerX - mapLayer.x) / mapLayer.scale.x;
-    const mouseInMapY = (centerY - mapLayer.y) / mapLayer.scale.y;
+    // 计算中心点在 layer 坐标系中的位置
+    const mouseInMapX = (centerX - layer.x) / layer.scale.x;
+    const mouseInMapY = (centerY - layer.y) / layer.scale.y;
     
     // 应用缩放
-    mapLayer.scale.set(clampedScale);
+    layer.scale.set(clampedScale);
     
     // 调整位置，使中心点保持不变
-    mapLayer.x = centerX - mouseInMapX * clampedScale;
-    mapLayer.y = centerY - mouseInMapY * clampedScale;
+    layer.x = centerX - mouseInMapX * clampedScale;
+    layer.y = centerY - mouseInMapY * clampedScale;
     
     check_new_bolck();
 }
-
-
-
 
 export function movecamera(x,y){
     // 移动地图层到指定位置
@@ -184,7 +197,6 @@ export function movecamera(x,y){
     mapLayer.y = (-y*mapLayer.scale.y)+app.screen.height/2;
     check_new_bolck(); 
 }
-
 
 window.addEventListener('resize', () => {
     app.renderer.resize(window.innerWidth, window.innerHeight);
@@ -208,65 +220,89 @@ function intostar(x,y){
 }
 
 let now_star=null;
-function click_(event){
-    if(now_view=='planet'){
-        let clpos=event.getLocalPosition(planetLayer)
-        if(Math.abs(clpos.x)<50&&Math.abs(clpos.y)<50){
-            chose_star(now_star)
+function handleClick(event) {
+    if (now_view === 'planet') {
+        const clpos = getClickPosition(event, planetLayer);
+        
+        // 检查是否点击中心区域
+        if (Math.abs(clpos.x) < 50 && Math.abs(clpos.y) < 50) {
+            chose_star(now_star);
+            return;
         }
-        else{
-            const r=Math.sqrt(clpos.x*clpos.x+clpos.y*clpos.y)
-            const angle=Math.atan2(clpos.y,clpos.x)
-            //const anchos=angle*180/Math.PI
-            for(let pl of now_star.planet){
-                //console.log(pl.anglepos,angle,Math.abs(pl.anglepos-angle),Math.abs(pl.heigh*100-r))
-                if(Math.abs(pl.anglepos-angle)<0.5 && Math.abs(pl.heigh*100-r)<50){
-                    close_planet(pl)
-                }
+        
+        // 检查是否点击行星
+        const r = Math.sqrt(clpos.x * clpos.x + clpos.y * clpos.y);
+        const angle = Math.atan2(clpos.y, clpos.x);
+        
+        for (let pl of now_star.planet) {
+            if (Math.abs(pl.anglepos - angle) < 0.5 && Math.abs(pl.heigh * 100 - r) < 50) {
+                close_planet(pl);
+                return;
             }
-
         }
-    }
-    else{
-        if(mapLayer.lastdrag&&Date.now()-mapLayer.lastdrag<500){return}
-        let clpos=event.getLocalPosition(mapLayer);
-        //console.log(clpos.x,clpos.y);
-        let st=intostar(clpos.x,clpos.y);
-        if(st){
-            
+    } else {
+        // 地图视图
+        if (mapLayer.lastdrag && Date.now() - mapLayer.lastdrag < 500) {
+            return;
+        }
+        
+        const clpos = getClickPosition(event, mapLayer);
+        const st = intostar(clpos.x, clpos.y);
+        
+        if (st) {
             chose_star(st);
         }
     }
-    
 }
 
+// 修改坐标获取函数
+function getClickPosition(event, targetLayer) {
+    return targetLayer.toLocal(new PIXI.Point(event.data.global.x, event.data.global.y));
+}
+
+// 修改触摸点获取函数
+function getTouches(event) {
+    if (event.data.originalEvent?.touches) {
+        return event.data.originalEvent.touches;
+    }
+    return null;
+}
+
+
+export function out_of_star(){
+    now_view='map'
+    planetLayer.visible=false
+    mapLayer.visible=true
+    //console.log('into map')
+}
 let now_view='map'
 // 监听键盘事件
 window.addEventListener('keydown', (event) => {
     //console.log(event.key);
     if (event.key === 'Escape' && now_view=='planet') {
-        now_view='map'
-        planetLayer.visible=false
-        mapLayer.visible=true
-        //console.log('into map')
+        out_of_star()
         
     }
 });
+
+export function inotsta(st){
+    now_view='planet'
+    planetLayer.visible=true
+    //juzhong
+    planetLayer.x=app.screen.width/2
+    planetLayer.y=app.screen.height/2
+    mapLayer.visible=false
+    console.log('into planet',st)
+    now_star=st;
+    rend_planet(st)
+}
 window.addEventListener('mousedown', (event) => {
     if (event.button === 2 && now_view=='map') {
         //let pos=event.getLocalPosition(mapLayer);
         let pos=mapLayer.toLocal(new PIXI.Point(event.clientX, event.clientY));
         let st=intostar(pos.x,pos.y);
         if(st){
-            now_view='planet'
-            planetLayer.visible=true
-            //juzhong
-            planetLayer.x=app.screen.width/2
-            planetLayer.y=app.screen.height/2
-            mapLayer.visible=false
-            console.log('into planet',st)
-            now_star=st;
-            rend_planet(st)
+            inotsta(st)
         }
     }
 });

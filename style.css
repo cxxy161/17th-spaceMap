@@ -1,21 +1,34 @@
 body {
     margin: 0;
     padding: 0;
+    touch-action: none;
+    font-family: 'Arial', sans-serif; /* 更改字体 */
+    background: linear-gradient(to bottom, #f0f8ff, #e6e6fa); /* 背景颜色渐变 */
 }
 
-#map_ui {
-    position: absolute; 
-    top: 10px;
-    left: 300px;
+#map_ui, #pos_go {
+    position: absolute;
     z-index: 2;
     background-color: rgba(255, 255, 255, 0.9);
     padding: 8px;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border: 1px solid #ccc; /* 增加边框 */
 }
+
+#map_ui {
+    top: 10px;
+    left: 300px;
+}
+
+#pos_go {
+    top: 10px;
+    left: 10px;
+}
+
 #infomation {
     display: none;
-    position: absolute; 
+    position: absolute;
     top: 70px;
     left: 10px;
     z-index: 2;
@@ -25,48 +38,60 @@ body {
     border-radius: 10px;
     padding: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid #ccc; /* 增加边框 */
 }
 
-#close_btn {
-    padding: 5px 12px;
-    background-color: #1cc6e4;
+#close_btn, #go_btn, #input_save, #intostar, #out_star, #put_data, #get_map_data {
+    background-color: #3498db;
     color: white;
     border: none;
     border-radius: 4px;
+    padding: 5px 12px;
     cursor: pointer;
-    position: absolute; 
-    top: 10px; 
-    right: 10px; 
+    transition: background-color 0.3s; /* 增加过渡效果 */
 }
-#pos_go {
-    position: absolute; 
+
+#close_btn {
+    position: absolute;
     top: 10px;
-    left: 10px;
-    z-index: 2;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 8px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    right: 10px;
 }
+
 #pos_input {
     padding: 5px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     margin-right: 8px;
-    width: 180px; /* 调整宽度以适应 #pos_go 的内边距 */
+    width: 180px;
 }
 
-#go_btn {
-    background-color: #1cc6e4;
-    color: white;
-    border: none;
+#star_info {
+    width: 300px;
+    word-wrap: break-word;
+    white-space: normal;
+    font-size: 14px; /* 调整字体大小 */
+    line-height: 1.5; /* 调整行高 */
+}
+
+/* 星体名称样式 */
+.star_get_name {
+    font-weight: bold; /* 加粗星体名称 */
+}
+
+/* 星体备注输入框样式 */
+#star_remak_input {
+    margin-top: 5px;
+}
+
+/* 输入框边框效果 */
+#star_name_input, #star_remak_input, #map_data_input {
+    border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 5px 12px;
-    cursor: pointer;
+    padding: 5px 10px;
+    margin-bottom: 5px;
 }
 
-#star_info{
-    width: 300px; /* 设置一个具体的宽度 */
-    word-wrap: break-word; /* 或者 overflow-wrap: break-word; */
-    white-space: normal; /* 默认值，允许自动换行 */
+/* 按钮悬停效果 */
+#close_btn:hover, #go_btn:hover, #input_save:hover, #intostar:hover, #out_star:hover, #put_data:hover, #get_map_data:hover {
+    background-color: #2980b9;
 }
