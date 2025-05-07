@@ -127,41 +127,38 @@ app.stage
   })
   .on('pointerup', (event) => {
     event.preventDefault();
-
+    
     // 移除触控点
     delete onTouchPointerIds[event.pointerId];
-
+    
     const activePointers = Object.keys(onTouchPointerIds).length;
-
+    
     if (activePointers === 1) {
-      const layer = which();
-      layer.dragging = false;
-      const remainingPointer = Object.values(onTouchPointerIds)[0];
-      dragStart.x = remainingPointer.x - layer.x;
-      dragStart.y = remainingPointer.y - layer.y;
-    }
+        const layer = which();
+        layer.dragging = false;
+        const remainingPointer = Object.values(onTouchPointerIds)[0];
+        dragStart.x = remainingPointer.x - layer.x;
+        dragStart.y = remainingPointer.y - layer.y;
+    } 
     else if (activePointers === 0) {
-      lastTowPoinDistance = null;
-      lastCenterPoint = null;
-
-      const layer = which();
-      layer.dragging = false;
-
-      // 点击检测（添加右键支持）
-      const timeElapsed = Date.now() - pointerStartTime;
-      const dx = event.global.x - pointerStartPosition.x;
-      const dy = event.global.y - pointerStartPosition.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-      if (!isDragging && timeElapsed < 300 && distance < 10) {
-        // 记录是否是右键
-        event.isRightClick = event.data.originalEvent?.button === 2 ||
-          event.data.originalEvent?.which === 3;
-        handleClick(event);
-      }
-      isDragging = false;
+        lastTowPoinDistance = null;
+        lastCenterPoint = null;
+        
+        const layer = which();
+        layer.dragging = false;
+        
+        // 点击检测（兼容触控和鼠标）
+        const timeElapsed = Date.now() - pointerStartTime;
+        const dx = event.global.x - pointerStartPosition.x;
+        const dy = event.global.y - pointerStartPosition.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (!isDragging && timeElapsed < 300 && distance < 10) {
+            handleClick(event);
+        }
+        isDragging = false;
     }
-  })
+})
   .on('pointerupoutside', () => {
     // 重置状态
     for (const id in onTouchPointerIds) {
@@ -251,44 +248,45 @@ function intostar(x, y) {
 
 let now_star = null;
 function handleClick(event) {
-  // 检查是否是右键点击
-  const isRightClick = event.data.originalEvent?.button === 2 ||
-    event.data.originalEvent?.which === 3;
-
+  // 判断是否是触控事件
+  const isTouchEvent = event.data.originalEvent?.pointerType === 'touch' || 
+                      event.data.originalEvent?.type?.includes('touch');
+  
   if (now_view === 'planet') {
-    const clpos = getClickPosition(event, planetLayer);
-
-    if (Math.abs(clpos.x) < 50 && Math.abs(clpos.y) < 50) {
-      chose_star(now_star);
-      return;
-    }
-
-    const r = Math.sqrt(clpos.x * clpos.x + clpos.y * clpos.y);
-    const angle = Math.atan2(clpos.y, clpos.x);
-
-    for (let pl of now_star.planet) {
-      if (Math.abs(pl.anglepos - angle) < 0.5 && Math.abs(pl.heigh * 100 - r) < 50) {
-        close_planet(pl);
-        return;
+      const clpos = getClickPosition(event, planetLayer);
+      
+      if (Math.abs(clpos.x) < 50 && Math.abs(clpos.y) < 50) {
+          chose_star(now_star);
+          return;
       }
-    }
+      
+      const r = Math.sqrt(clpos.x * clpos.x + clpos.y * clpos.y);
+      const angle = Math.atan2(clpos.y, clpos.x);
+      
+      for (let pl of now_star.planet) {
+          if (Math.abs(pl.anglepos - angle) < 0.5 && Math.abs(pl.heigh * 100 - r) < 50) {
+              close_planet(pl);
+              return;
+          }
+      }
   } else {
-    // 地图视图
-    if (mapLayer.lastdrag && Date.now() - mapLayer.lastdrag < 500) {
-      return;
-    }
-
-    const clpos = getClickPosition(event, mapLayer);
-    const st = intostar(clpos.x, clpos.y);
-
-    if (st) {
-      // 右键点击特殊处理
-      if (isRightClick) {
-        inotsta(st); // 右键进入星球
-      } else {
-        chose_star(st); // 左键选择星球
+      
+      
+      const clpos = getClickPosition(event, mapLayer);
+      const st = intostar(clpos.x, clpos.y);
+      
+      if (st) {
+          // 触控事件处理
+          if (isTouchEvent) {
+              chose_star(st); // 触控统一视为左键点击
+          } 
+          // 鼠标事件处理
+          else if (event.data.originalEvent?.button === 2) {
+              inotsta(st); // 鼠标右键
+          } else {
+              chose_star(st); // 鼠标左键
+          }
       }
-    }
   }
 }
 
