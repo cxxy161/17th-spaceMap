@@ -132,35 +132,34 @@ app.stage
     const activePointers = Object.keys(onTouchPointerIds).length;
     
     if (activePointers === 1) {
-      // 当双指变单指时，重置拖动状态但不立即启用单指拖动
-      const layer = which();
-      layer.dragging = false;
-      
-      // 更新dragStart为当前手指位置
-      const remainingPointer = Object.values(onTouchPointerIds)[0];
-      dragStart.x = remainingPointer.x - layer.x;
-      dragStart.y = remainingPointer.y - layer.y;
+        const layer = which();
+        layer.dragging = false;
+        const remainingPointer = Object.values(onTouchPointerIds)[0];
+        dragStart.x = remainingPointer.x - layer.x;
+        dragStart.y = remainingPointer.y - layer.y;
     } 
     else if (activePointers === 0) {
-      // 完全结束操作时才重置所有状态
-      lastTowPoinDistance = null;
-      lastCenterPoint = null;
-      
-      const layer = which();
-      layer.dragging = false;
-      const timeElapsed = Date.now() - pointerStartTime;
-      const dx = event.global.x - pointerStartPosition.x;
-      const dy = event.global.y - pointerStartPosition.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      if (!isDragging && timeElapsed < 300 && distance < 50) {
-        //alert(1)
-        handleClick(event);
-      }
-      isDragging = false;
-    
+        lastTowPoinDistance = null;
+        lastCenterPoint = null;
+        
+        const layer = which();
+        layer.dragging = false;
+        
+        // 点击检测（添加右键支持）
+        const timeElapsed = Date.now() - pointerStartTime;
+        const dx = event.global.x - pointerStartPosition.x;
+        const dy = event.global.y - pointerStartPosition.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (!isDragging && timeElapsed < 300 && distance < 10) {
+            // 记录是否是右键
+            event.isRightClick = event.data.originalEvent?.button === 2 || 
+                               event.data.originalEvent?.which === 3;
+            handleClick(event);
+        }
+        isDragging = false;
     }
-  })
+})
   .on('pointerupoutside', () => {
     // 重置状态
     for (const id in onTouchPointerIds) {
@@ -308,6 +307,7 @@ export function movecamera(x,y){
 
 window.addEventListener('resize', () => {
     app.renderer.resize(window.innerWidth, window.innerHeight);
+    app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
 });
 
 function intostar(x,y){
@@ -329,37 +329,45 @@ function intostar(x,y){
 
 let now_star=null;
 function handleClick(event) {
-    
-    if (now_view === 'planet') {
-        const clpos = getClickPosition(event, planetLayer);
-        
-        // 检查是否点击中心区域
-        if (Math.abs(clpos.x) < 50 && Math.abs(clpos.y) < 50) {
-            chose_star(now_star);
-            return;
-        }
-        
-        // 检查是否点击行星
-        const r = Math.sqrt(clpos.x * clpos.x + clpos.y * clpos.y);
-        const angle = Math.atan2(clpos.y, clpos.x);
-        
-        for (let pl of now_star.planet) {
-            if (Math.abs(pl.anglepos - angle) < 0.5 && Math.abs(pl.heigh * 100 - r) < 50) {
-                close_planet(pl);
-                return;
-            }
-        }
-    } else {
-        // 地图视图
-        
-        
-        const clpos = getClickPosition(event, mapLayer);
-        const st = intostar(clpos.x, clpos.y);
-        
-        if (st) {
-            chose_star(st);
-        }
-    }
+  // 检查是否是右键点击
+  const isRightClick = event.data.originalEvent?.button === 2 || 
+                      event.data.originalEvent?.which === 3;
+  
+  if (now_view === 'planet') {
+      const clpos = getClickPosition(event, planetLayer);
+      
+      if (Math.abs(clpos.x) < 50 && Math.abs(clpos.y) < 50) {
+          chose_star(now_star);
+          return;
+      }
+      
+      const r = Math.sqrt(clpos.x * clpos.x + clpos.y * clpos.y);
+      const angle = Math.atan2(clpos.y, clpos.x);
+      
+      for (let pl of now_star.planet) {
+          if (Math.abs(pl.anglepos - angle) < 0.5 && Math.abs(pl.heigh * 100 - r) < 50) {
+              close_planet(pl);
+              return;
+          }
+      }
+  } else {
+      // 地图视图
+      if (mapLayer.lastdrag && Date.now() - mapLayer.lastdrag < 500) {
+          return;
+      }
+      
+      const clpos = getClickPosition(event, mapLayer);
+      const st = intostar(clpos.x, clpos.y);
+      
+      if (st) {
+          // 右键点击特殊处理
+          if (isRightClick) {
+              inotsta(st); // 右键进入星球
+          } else {
+              chose_star(st); // 左键选择星球
+          }
+      }
+  }
 }
 
 // 修改坐标获取函数
@@ -369,7 +377,7 @@ function getClickPosition(event, targetLayer) {
 
 // 修改触摸点获取函数
 function getTouches(event) {   
-    console.log(event) 
+    //console.log(event) 
     //alert(Object.keys(event.data.originalEvent))
     if (event.originalEvent?.touches) {
         return event.originalEvent.touches;
@@ -405,7 +413,9 @@ export function inotsta(st){
     now_star=st;
     rend_planet(st)
 }
+
 window.addEventListener('mousedown', (event) => {
+  console.log(event.button)
     if (event.button === 2 && now_view=='map') {
         //let pos=event.getLocalPosition(mapLayer);
         let pos=mapLayer.toLocal(new PIXI.Point(event.clientX, event.clientY));

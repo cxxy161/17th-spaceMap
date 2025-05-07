@@ -217,7 +217,7 @@ function generateAtmosphere(planetType, mass, orbitRadius, starType = "G") {
 
         if (currentMax > min) {
             percent = rand([planetType, mass, orbitRadius,2],0,1,true) * (currentMax - min) + min;
-            percent = parseFloat(percent.toFixed(2)); // 保留两位小数
+            percent = getfloor(percent); // 保留两位小数
             remainingPercent -= percent;
         }
 
@@ -229,7 +229,7 @@ function generateAtmosphere(planetType, mass, orbitRadius, starType = "G") {
     // 如果剩余百分比未分配完，分配给主要成分
     if (remainingPercent > 0) {
         const mainGas = template.possibleGases[0]; // 第一个气体通常是主要成分
-        atmosphere[mainGas] = (atmosphere[mainGas] || 0) + parseFloat(remainingPercent.toFixed(2));
+        atmosphere[mainGas] = (atmosphere[mainGas] || 0) + getfloor(remainingPercent);
     }
 
     return atmosphere;
@@ -293,7 +293,7 @@ function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5
     }*/
     for (let i = 1; i < planetCount+1; i++) {
         
-        const he=rand([id,i],pj*i*0.5,pj*i*1.5,true)
+        const he=getfloor(rand([id,i],pj*i*0.5,pj*i*1.5,true))
         orbits.push(he)
     }
     return orbits.sort((a, b) => a - b);
@@ -303,17 +303,17 @@ function creat_star(bx,by,x,y,i){
     //let y = Math.floor(by*500 + rand([bx,by,i,2],0,500))
     let sx = Math.floor(bx*500+x)
     let sy = Math.floor(by*500+y)
-    let temp=randNormalCLT([sx,sy,i,3],3500,20000,1000,40000)
+    let temp=getfloor(randNormalCLT([sx,sy,i,3],3500,20000,1000,40000))
     //let temp=rand([sx,sy,i,3],1000,40000)
-    let mass=randNormalCLT([sx,sy,i,4],0.5,8,0.08,100)//倍太阳质量
+    let mass=getfloor(randNormalCLT([sx,sy,i,4],0.5,8,0.08,100))//倍太阳质量
     //let mass=randNormalCLT([sx,sy,i,4],0.5,0.8,0.08,100)//倍太阳质量
-    let age=randNormalCLT([sx,sy,i,5],5,30,0,138)//亿年
+    let age=getfloor(randNormalCLT([sx,sy,i,5],5,30,0,138))//亿年
     //let radius=randNormalCLT([sx,sy,i,6],0.8,1.5,0.01,1000)//倍太阳半径
     let radius;
     if (mass < 8) {
-    radius = Math.pow(mass, 0.8); // 主序星半径-质量关系
+    radius = getfloor(Math.pow(mass, 0.8)); // 主序星半径-质量关系
     } else {
-    radius = 10 * Math.pow(mass, 0.5); // 大质量星或巨星简化模型
+    radius = getfloor(10 * Math.pow(mass, 0.5)); // 大质量星或巨星简化模型
     }
     let data=classifyStarWithColor(age,temp,radius,mass)
     let type=data.type
@@ -365,6 +365,9 @@ const planet_type={
 }
 const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3','o3']
 
+function getfloor(num){
+    return Math.floor(num*100)/100
+}
 
 export function creat_planet(stid,heigh,st){
     let numid=hash([stid,heigh])
@@ -378,22 +381,14 @@ export function creat_planet(stid,heigh,st){
 
     let air=generateAtmosphere(type,mass,heigh)
     let color=getPlanetColor(air)
-    console.log({
-        'mass':mass,
-        'radius':radius,
-        'rou':rou,
-        'g':g,
-        'type':type,
-        'air':air,
-        'color':color,
-    })
+    
     return {
-        'mass':mass,
-        'radius':radius,
-        'anglepos':jizuobiao,
-        'heigh':heigh,
-        'rou':rou,
-        'g':g,
+        'mass':getfloor(mass),
+        'radius':getfloor(radius),
+        'anglepos':getfloor(jizuobiao),
+        'heigh':getfloor(heigh),
+        'rou':getfloor(rou),
+        'g':getfloor(g),
         'type':type,
         'air':air,
         'color':color,
