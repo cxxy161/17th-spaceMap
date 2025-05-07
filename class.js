@@ -58,7 +58,7 @@ const b36ToNum = s => (s[0] === 'N' ? -1 : 1) * parseInt(s.slice(1).toLowerCase(
 
 export function rand(seed, min = 0, max = 1, isFloat = false) {
     // 确保种子是整数
-    seed=hash(seed);
+    seed = hash(seed);
     seed = Math.floor(seed);
 
     // Mulberry32算法 - 高质量的伪随机数生成
@@ -77,10 +77,10 @@ export function rand(seed, min = 0, max = 1, isFloat = false) {
 export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = -Infinity, max = Infinity, maxRetries = 3) {
     // 增强型种子处理（支持数字和字符串种子）
     let iterations = 10; // CLT迭代次数
-    let state = typeof seed === 'string' ? 
-        stringHash(seed) : 
+    let state = typeof seed === 'string' ?
+        stringHash(seed) :
         Math.imul(hash(seed), 0x6D2B79F5) >>> 0;
-    
+
     // 优化的随机数生成循环
     let sum = 0;
     for (let i = 0; i < iterations; i++) {
@@ -88,14 +88,14 @@ export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = -Infinity,
         state ^= state >>> 17;
         state ^= state << 5;
         // 使用53位精度随机数
-        const u = ((state >>> 0) / 4294967296) + 
-                 (state & 0x1FFFFF) / 9007199254740992;
+        const u = ((state >>> 0) / 4294967296) +
+            (state & 0x1FFFFF) / 9007199254740992;
         sum += u;
     }
 
     // 计算Z分数（优化计算过程）
     const z = (sum - iterations / 2) * Math.sqrt(12 / iterations) * stdDev + mean;
-    
+
     // 边界处理（优化递归为迭代）
     let result = z;
     let retries = maxRetries;
@@ -106,13 +106,13 @@ export function randNormalCLT(seed, mean = 5000, stdDev = 5000, min = -Infinity,
             state ^= state << 13;
             state ^= state >>> 17;
             state ^= state << 5;
-            const u = ((state >>> 0) / 4294967296) + 
-                     (state & 0x1FFFFF) / 9007199254740992;
+            const u = ((state >>> 0) / 4294967296) +
+                (state & 0x1FFFFF) / 9007199254740992;
             newSum += u;
         }
         result = (newSum - iterations / 2) * Math.sqrt(12 / iterations) * stdDev + mean;
     }
-    
+
     // 最终边界截断（避免无限循环）
     return Math.min(max, Math.max(min, result));
 }
@@ -123,7 +123,7 @@ export function hash(arr) {
     for (let i = 0; i < arr.length; i++) {
         const str = String(arr[i]);
         for (let j = 0; j < str.length; j++) {
-        hash = (hash * 31 + str.charCodeAt(j)) | 0; // 31是质数
+            hash = (hash * 31 + str.charCodeAt(j)) | 0; // 31是质数
         }
     }
 
@@ -131,50 +131,50 @@ export function hash(arr) {
 }
 /*
 var color_temps = [
-	[1000, [255, 128, 0]],
-	[3700, [255, 191, 0]],
-	[5200, [255, 255, 128]],
-	[6000, [255, 255, 191]],
-	[7500, [255, 255, 255]],
-	[10000, [0, 128, 255]],
-	[30000, [0, 0, 255]]
+    [1000, [255, 128, 0]],
+    [3700, [255, 191, 0]],
+    [5200, [255, 255, 128]],
+    [6000, [255, 255, 191]],
+    [7500, [255, 255, 255]],
+    [10000, [0, 128, 255]],
+    [30000, [0, 0, 255]]
 ]
 export function temperature_to_rgb(temp){
     if (temp <= color_temps[0][0]){
-		return color_temps[0][1]
+        return color_temps[0][1]
     }
-	else if (temp >= color_temps[color_temps.length - 1][0]){
-		return color_temps[color_temps.length - 1][1]
+    else if (temp >= color_temps[color_temps.length - 1][0]){
+        return color_temps[color_temps.length - 1][1]
     }
 
-	for (let i=0;i<color_temps.length - 1;i++){//i in range(color_temps.size() - 1)){
+    for (let i=0;i<color_temps.length - 1;i++){//i in range(color_temps.size() - 1)){
         if (color_temps[i][0] <= temp && temp <= color_temps[i + 1][0]){
-			// 线性插值
-			var t0 = color_temps[i][0]
-			var r0 = color_temps[i][1][0]
-			var g0 = color_temps[i][1][1]
-			var b0 = color_temps[i][1][2]
-			var t1 = color_temps[i + 1][0]
-			var r1 = color_temps[i + 1][1][0]
-			var g1 = color_temps[i + 1][1][1]
-			var b1 = color_temps[i + 1][1][2]
-			var t = (temp - t0) / (t1 - t0)
-			var r = r0 + (r1 - r0) * t
-			var g = g0 + (g1 - g0) * t
-			var b = b0 + (b1 - b0) * t
-			return rgbToHex([r, g, b])
+            // 线性插值
+            var t0 = color_temps[i][0]
+            var r0 = color_temps[i][1][0]
+            var g0 = color_temps[i][1][1]
+            var b0 = color_temps[i][1][2]
+            var t1 = color_temps[i + 1][0]
+            var r1 = color_temps[i + 1][1][0]
+            var g1 = color_temps[i + 1][1][1]
+            var b1 = color_temps[i + 1][1][2]
+            var t = (temp - t0) / (t1 - t0)
+            var r = r0 + (r1 - r0) * t
+            var g = g0 + (g1 - g0) * t
+            var b = b0 + (b1 - b0) * t
+            return rgbToHex([r, g, b])
         }
     }
-		
+    	
 }*/
 
 function rgbToHex(rgbArray) {
     // 确保数组有3个元素且都是0-255的数字
     const [r, g, b] = rgbArray.map(val => Math.max(0, Math.min(255, val)));
-    
+
     // 使用位操作组合成十六进制数
     return (r << 16) | (g << 8) | b;
-  }
+}
 
 export class PerlinNoise2D {
     constructor() {
@@ -189,7 +189,7 @@ export class PerlinNoise2D {
 
         // 更好的哈希函数
         let random = this._hash(x, y, seed);
-        
+
         const angle = random * Math.PI * 2;
         const gradient = [Math.cos(angle), Math.sin(angle)];
         this.gradients.set(key, gradient);
@@ -212,7 +212,7 @@ export class PerlinNoise2D {
 
     // 平滑插值
     _smoothInterpolate(a, b, w) {
-        return (b - a) * (6 * w**5 - 15 * w**4 + 10 * w**3) + a;
+        return (b - a) * (6 * w ** 5 - 15 * w ** 4 + 10 * w ** 3) + a;
     }
 
     // 获取噪声值
@@ -242,7 +242,7 @@ export class PerlinNoise2D {
         const ix1 = this._smoothInterpolate(n2, n3, sx);
 
         const value = this._smoothInterpolate(ix0, ix1, sy);
-        
+
         this.memory.set(cacheKey, value);
         return value;
     }

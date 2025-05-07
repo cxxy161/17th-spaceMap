@@ -1,5 +1,5 @@
-import { app,mapLayer,beload,addload,planetLayer } from "./main.js";
-import { getblock,creat_planet } from "./data.js";
+import { app, mapLayer, beload, addload, planetLayer } from "./main.js";
+import { getblock, creat_planet } from "./data.js";
 import { rand } from "./class.js";
 //import { temperature_to_rgb } from "./class.js";
 
@@ -30,61 +30,61 @@ function init_textures() {
 //uiRectangle.endFill();
 //uiLayer.addChild(uiRectangle);
 
-function rend_line(x,y){
+function rend_line(x, y) {
     let rectangle = new PIXI.Graphics();
 
     rectangle.lineStyle(2, 0xFF0000, 1) // 线条宽度为2，颜色为红色，alpha为1
-            .drawRect(x*500,y*500,500,500);
+        .drawRect(x * 500, y * 500, 500, 500);
 
     mapLayer.addChild(rectangle);
 }
 
 //let star_fill=
-function rend_block(list,bx,by){
+function rend_block(list, bx, by) {
     var rendstargroup = new PIXI.Graphics();
-    beload[[bx,by]].rend=rendstargroup
+    beload[[bx, by]].rend = rendstargroup
     //rendstargroup.fill()
-    for(let i=0;i<list.length;i++){
-        let x=list[i].star.x
-        let y=list[i].star.y
+    for (let i = 0; i < list.length; i++) {
+        let x = list[i].star.x
+        let y = list[i].star.y
 
-        rend_star(x,y,rendstargroup,list[i].star);
+        rend_star(x, y, rendstargroup, list[i].star);
     }
     //rendstargroup.endFill();
     mapLayer.addChild(rendstargroup);
 }
 
-function rend_star(x,y,star,obj){
-    
+function rend_star(x, y, star, obj) {
+
     star.fill(obj.color);
-    
-    star.circle(x,y,10);
+
+    star.circle(x, y, 10);
     star.endFill();
-    
+
 }
-    
-   /*
+
+/*
 function rend_block(list) {
-    for (let i = 0, len = list.length; i < len; i++) {
-        const { x, y } = list[i];
-        rend_star(x, y);
-    }
+ for (let i = 0, len = list.length; i < len; i++) {
+     const { x, y } = list[i];
+     rend_star(x, y);
+ }
 }
 
 function rend_star(x, y) {
-    const star = new PIXI.Sprite(PIXI.Texture.WHITE); // 改用 Sprite（ParticleContainer 不支持 Graphics）
-    star.tint = 0xffffff;
-    star.width = star.height = 10; // 圆形直径 = 5*2
-    star.anchor.set(0.5);
-    star.position.set(x, y);
-    mapLayer.addChild(star);
+ const star = new PIXI.Sprite(PIXI.Texture.WHITE); // 改用 Sprite（ParticleContainer 不支持 Graphics）
+ star.tint = 0xffffff;
+ star.width = star.height = 10; // 圆形直径 = 5*2
+ star.anchor.set(0.5);
+ star.position.set(x, y);
+ mapLayer.addChild(star);
 }*/
-var old_view_scxy=[0,0,0,0];
-const areEqual = (a, b) => 
-    a.length === b.length && 
+var old_view_scxy = [0, 0, 0, 0];
+const areEqual = (a, b) =>
+    a.length === b.length &&
     a.every((item, index) => item === b[index]);
 
-export function check_new_bolck(){
+export function check_new_bolck() {
     // 检查是否有新的块需要绘制
     // 计算缩放后的实际屏幕宽度和高度（世界 坐标）
     const scaledScreenWidth = app.screen.width / mapLayer.scale.x;
@@ -94,18 +94,18 @@ export function check_new_bolck(){
     const tileSize = 500;
 
     // 计算左上角 (xs, ys)
-    let xs = -Math.ceil((mapLayer.x / tileSize) / mapLayer.scale.y) -1//- 1;
-    let ys = -Math.ceil((mapLayer.y / tileSize) / mapLayer.scale.y) -1//- 1;
+    let xs = -Math.ceil((mapLayer.x / tileSize) / mapLayer.scale.y) - 1//- 1;
+    let ys = -Math.ceil((mapLayer.y / tileSize) / mapLayer.scale.y) - 1//- 1;
 
     // 计算右下角 (xe, ye)，考虑缩放后的屏幕范围
-    let xe = Math.ceil((-mapLayer.x + scaledScreenWidth) / tileSize / mapLayer.scale.x) +1//+ 1;
-    let ye = Math.ceil((-mapLayer.y + scaledScreenHeight) / tileSize / mapLayer.scale.y)+1//+ 1;
+    let xe = Math.ceil((-mapLayer.x + scaledScreenWidth) / tileSize / mapLayer.scale.x) + 1//+ 1;
+    let ye = Math.ceil((-mapLayer.y + scaledScreenHeight) / tileSize / mapLayer.scale.y) + 1//+ 1;
     /*
     let xs=-Math.ceil(-(mapLayer.x / 500) / mapLayer.scale.y) - 1;
     let ys=-Math.ceil(-(mapLayer.y / 500) / mapLayer.scale.y) - 1;
     let xe=Math.ceil()
 */
-    if(areEqual([xs,ys,xe,ye],old_view_scxy)){
+    if (areEqual([xs, ys, xe, ye], old_view_scxy)) {
         check_old_bolck(old_view_scxy)
         return
     }
@@ -113,27 +113,27 @@ export function check_new_bolck(){
     //console.log("check_new_bolck",xs,ys,xe,ye,mapLayer.scale.x,mapLayer.scale.y);
     for (let i = Math.min(xs, xe); i < Math.max(xs, xe); i++) {
         for (let j = Math.min(ys, ye); j < Math.max(ys, ye); j++) {
-            if(!([i,j] in beload)){
-                if(!([i,j] in addload)){
+            if (!([i, j] in beload)) {
+                if (!([i, j] in addload)) {
                     //getblock(i,j);
-                    addload.push([i,j]);
+                    addload.push([i, j]);
                     //console.log("addload",addload);
                 }
             }
         }
     }
-    old_view_scxy=[xs,ys,xe,ye]
+    old_view_scxy = [xs, ys, xe, ye]
     check_old_bolck(old_view_scxy)
     //rend_bolcks();
 }
-function check_old_bolck(view){
-    for (let sti of Object.keys(beload)){
-        let st=sti.split(",").map(Number);
+function check_old_bolck(view) {
+    for (let sti of Object.keys(beload)) {
+        let st = sti.split(",").map(Number);
         //let st=beload[sti]
         //console.log(st,sti,view);
-        if(st[0]<view[0]-7||st[0]>=view[2]+7||st[1]<view[1]-7||st[1]>=view[3]+7){
+        if (st[0] < view[0] - 7 || st[0] >= view[2] + 7 || st[1] < view[1] - 7 || st[1] >= view[3] + 7) {
             //console.log("remove",st[0],st[1]);
-            let rend=beload[st].rend
+            let rend = beload[st].rend
             mapLayer.removeChild(rend);
             delete beload[st];
         }
@@ -141,26 +141,27 @@ function check_old_bolck(view){
 }
 
 
-function rend_bolcks(){
+function rend_bolcks() {
     // 渲染块
-    if(addload.length==0){return}
-    const time=Date.now();
-    for(let i=0;i<addload.length;i++){
-        let [x,y]=addload[i];
-        if([x,y] in beload){
-            addload.splice(i,1);
+    if (addload.length == 0) { return }
+    const time = Date.now();
+    for (let i = 0; i < addload.length; i++) {
+        let [x, y] = addload[i];
+        if ([x, y] in beload) {
+            addload.splice(i, 1);
             continue
         }
-        let block=getblock(x,y);
-        beload[[x,y]]={block:block,rend:null};
+        let block = getblock(x, y);
+        beload[[x, y]] = { block: block, rend: null };
         //const time2=Date.now(); 
         //rend_line(x,y);
-        rend_block(block,x,y);  
+        rend_block(block, x, y);
         //console.log("rend_line",Date.now()-time2,block);
-        addload.splice(i,1);
-        if(Date.now()-time>16){
+        addload.splice(i, 1);
+        if (Date.now() - time > 16) {
             //console.log('overtime')
-            break}
+            break
+        }
 
         //console.log("rend_bolck",x,y,block);
     }
@@ -169,52 +170,52 @@ function rend_bolcks(){
     //addload=[];
 }
 
-export function rend_planet(data){
+export function rend_planet(data) {
     //star
     planetLayer.removeChildren();
-    
-    let st=data.star;
-    let star=new PIXI.Graphics();
+
+    let st = data.star;
+    let star = new PIXI.Graphics();
     //console.log(st.color,st.radius)
     star.fill(st.color)
-    star.circle(0,0,st.radius*2);
+    star.circle(0, 0, st.radius * 2);
     star.endFill();
     planetLayer.addChild(star);
-    
-    
-    
-    for(let he of st.planets){
+
+
+
+    for (let he of st.planets) {
         //let plt=
         //if(!data.planet){
-         let plt=creat_planet(st.posid,he,st)
-            //console.log(data)
-            data.planet.push(plt)
+        let plt = creat_planet(st.posid, he, st)
+        //console.log(data)
+        data.planet.push(plt)
         //}
         //else{
         //    plt=data.planets.find(p=>p.heigh==he)
         //}
-        
-        const jizuobiao=plt.anglepos
-        const rendx=he*100*Math.cos(jizuobiao);
-        const rendy=he*100*Math.sin(jizuobiao);
+
+        const jizuobiao = plt.anglepos
+        const rendx = he * 100 * Math.cos(jizuobiao);
+        const rendy = he * 100 * Math.sin(jizuobiao);
         //console.log(he,jizuobiao,rendx,rendy)
         //huizhiguidao
-        let guiji=new PIXI.Graphics();
-        guiji.lineStyle(1.5,0x5050FF,1) // 线条宽度为2，颜色为红色，alpha为1
-        guiji.beginFill(0x000000,0)
+        let guiji = new PIXI.Graphics();
+        guiji.lineStyle(1.5, 0x5050FF, 1) // 线条宽度为2，颜色为红色，alpha为1
+        guiji.beginFill(0x000000, 0)
         //guiji.arc(0,0,he*100,0,jizuobiao+Math.PI/2)
-        guiji.circle(0,0,he*100);
-        guiji.endFill();    
+        guiji.circle(0, 0, he * 100);
+        guiji.endFill();
         planetLayer.addChild(guiji);
 
 
-        let planet=new PIXI.Graphics();
+        let planet = new PIXI.Graphics();
         planet.fill(plt.color)
-        planet.circle(rendx,rendy,plt.radius*1.5);
+        planet.circle(rendx, rendy, plt.radius * 1.5);
         planet.endFill();
         planetLayer.addChild(planet);
     }
-    
+
 
 }
 
@@ -229,7 +230,7 @@ export function rend_planet(data){
 
 
 //console.log(window.app);
-app.ticker.add(() => {rend_bolcks();});
+app.ticker.add(() => { rend_bolcks(); });
 
 //init_textures(); // 初始化纹理
 //PIXI.Texture.WHITE = whiteTexture; 

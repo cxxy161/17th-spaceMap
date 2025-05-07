@@ -1,8 +1,8 @@
 //import {noise} from './perlin.js';
 //var noise=require('perlin.js')
 //type="module" 
-import {hash,rand,PerlinNoise2D,randNormalCLT} from './class.js';
-import {xyToPosId} from './class.js';
+import { hash, rand, PerlinNoise2D, randNormalCLT } from './class.js';
+import { xyToPosId } from './class.js';
 import { datalist } from './main.js';
 
 function classifyStarWithColor(age, temperature, radius, mass) {
@@ -101,8 +101,8 @@ function temperatureToRGB(temp) {
 
     return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 }
-function getstarcolor(type,tem){
-    
+function getstarcolor(type, tem) {
+
 }
 
 function generateAtmosphere(planetType, mass, orbitRadius, starType = "G") {
@@ -203,7 +203,7 @@ function generateAtmosphere(planetType, mass, orbitRadius, starType = "G") {
     const gases = [...template.possibleGases];
 
     // 随机打乱气体顺序，避免总是优先分配某些成分
-    gases.sort(() => rand([planetType, mass, orbitRadius,1],0,1,true) - 0.5);
+    gases.sort(() => rand([planetType, mass, orbitRadius, 1], 0, 1, true) - 0.5);
 
     for (let i = 0; i < gases.length; i++) {
         const gas = gases[i];
@@ -216,7 +216,7 @@ function generateAtmosphere(planetType, mass, orbitRadius, starType = "G") {
         let percent = 0;
 
         if (currentMax > min) {
-            percent = rand([planetType, mass, orbitRadius,2],0,1,true) * (currentMax - min) + min;
+            percent = rand([planetType, mass, orbitRadius, 2], 0, 1, true) * (currentMax - min) + min;
             percent = getfloor(percent); // 保留两位小数
             remainingPercent -= percent;
         }
@@ -278,9 +278,9 @@ function getPlanetColor(atmosphere) {
     return `rgb(${color.r}, ${color.g}, ${color.b})`;
 }
 
-function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5,id) {
+function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5, id) {
     const orbits = [];
-    const pj=(minAU+maxAU)/planetCount
+    const pj = (minAU + maxAU) / planetCount
     /*/ 生成幂律分布的初始候选轨道（范围[minAU, maxAU]）
     for (let i = 0; i < planetCount; i++) {
         // 生成[0,1)均匀随机数，转换为幂律分布（指数-1.5）
@@ -291,116 +291,116 @@ function generatePlanetOrbits(starMass, minAU = 0.1, maxAU = 30, planetCount = 5
         const a = minAU + (maxAU - minAU) * (1 - Math.pow(powerLawValue, -2/3)); // 修正映射公式
         orbits.push(Math.floor(a*100)/100);
     }*/
-    for (let i = 1; i < planetCount+1; i++) {
-        
-        const he=getfloor(rand([id,i],pj*i*0.5,pj*i*1.5,true))
+    for (let i = 1; i < planetCount + 1; i++) {
+
+        const he = getfloor(rand([id, i], pj * i * 0.5, pj * i * 1.5, true))
         orbits.push(he)
     }
     return orbits.sort((a, b) => a - b);
 }
-function creat_star(bx,by,x,y,i){
+function creat_star(bx, by, x, y, i) {
     //let x = Math.floor(bx*500 + rand([bx,by,i,1],0,500))
     //let y = Math.floor(by*500 + rand([bx,by,i,2],0,500))
-    let sx = Math.floor(bx*500+x)
-    let sy = Math.floor(by*500+y)
-    let temp=getfloor(randNormalCLT([sx,sy,i,3],3500,20000,1000,40000))
+    let sx = Math.floor(bx * 500 + x)
+    let sy = Math.floor(by * 500 + y)
+    let temp = getfloor(randNormalCLT([sx, sy, i, 3], 3500, 20000, 1000, 40000))
     //let temp=rand([sx,sy,i,3],1000,40000)
-    let mass=getfloor(randNormalCLT([sx,sy,i,4],0.5,8,0.08,100))//倍太阳质量
+    let mass = getfloor(randNormalCLT([sx, sy, i, 4], 0.5, 8, 0.08, 100))//倍太阳质量
     //let mass=randNormalCLT([sx,sy,i,4],0.5,0.8,0.08,100)//倍太阳质量
-    let age=getfloor(randNormalCLT([sx,sy,i,5],5,30,0,138))//亿年
+    let age = getfloor(randNormalCLT([sx, sy, i, 5], 5, 30, 0, 138))//亿年
     //let radius=randNormalCLT([sx,sy,i,6],0.8,1.5,0.01,1000)//倍太阳半径
     let radius;
     if (mass < 8) {
-    radius = getfloor(Math.pow(mass, 0.8)); // 主序星半径-质量关系
+        radius = getfloor(Math.pow(mass, 0.8)); // 主序星半径-质量关系
     } else {
-    radius = getfloor(10 * Math.pow(mass, 0.5)); // 大质量星或巨星简化模型
+        radius = getfloor(10 * Math.pow(mass, 0.5)); // 大质量星或巨星简化模型
     }
-    let data=classifyStarWithColor(age,temp,radius,mass)
-    let type=data.type
-    let color=data.color.rgb
+    let data = classifyStarWithColor(age, temp, radius, mass)
+    let type = data.type
+    let color = data.color.rgb
     let posid = xyToPosId(sx, sy)
 
-    let planetnum=Math.max(rand([sx,sy,i,6],0,18)-10,0)
-    let planetminau=rand([sx,sy,i,7],0,2)
-    let planetmaxau=rand([sx,sy,i,8],3,30)
-    let planetorbits=generatePlanetOrbits(mass,planetminau,planetmaxau,planetnum,posid)
+    let planetnum = Math.max(rand([sx, sy, i, 6], 0, 18) - 10, 0)
+    let planetminau = rand([sx, sy, i, 7], 0, 2)
+    let planetmaxau = rand([sx, sy, i, 8], 3, 30)
+    let planetorbits = generatePlanetOrbits(mass, planetminau, planetmaxau, planetnum, posid)
 
     return {
-        'x':sx,
-        'y':sy,
-        'index':i,
-        'posid':posid,
-        'temp':temp,
-        'mass':mass,
-        'age':age,
-        'radius':radius,
-        'type':type,
-        'color':color,
-        'planets':planetorbits,
+        'x': sx,
+        'y': sy,
+        'index': i,
+        'posid': posid,
+        'temp': temp,
+        'mass': mass,
+        'age': age,
+        'radius': radius,
+        'type': type,
+        'color': color,
+        'planets': planetorbits,
         //'num':[planetnum,planetminau,planetmaxau,rand([sx,sy,i,6],0,18) ]
     }
 }
 
-const planet_type={
-    '类地行星':{
-        'rou':[4,5.5],
-        'rad':[0.5,1.5],
-        'mass':[0.1,10]
+const planet_type = {
+    '类地行星': {
+        'rou': [4, 5.5],
+        'rad': [0.5, 1.5],
+        'mass': [0.1, 10]
     },
-    '超级地球':{
-        'rou':[2,5],
-        'rad':[1.5,2.5],
-        'mass':[5,10]
+    '超级地球': {
+        'rou': [2, 5],
+        'rad': [1.5, 2.5],
+        'mass': [5, 10]
     },
-    '冰巨星':{
-        'rou':[1,2],
-        'rad':[3,5],
-        'mass':[10,50]
+    '冰巨星': {
+        'rou': [1, 2],
+        'rad': [3, 5],
+        'mass': [10, 50]
     },
-    '气态巨星':{
-        'rou':[0.5,1.5],
-        'rad':[5,12],
-        'mass':[50,1000]
+    '气态巨星': {
+        'rou': [0.5, 1.5],
+        'rad': [5, 12],
+        'mass': [50, 1000]
     },
 }
-const maybe_planet_air=['n2','o2','h2o','co2','ch4','nh3','o3']
+const maybe_planet_air = ['n2', 'o2', 'h2o', 'co2', 'ch4', 'nh3', 'o3']
 
-function getfloor(num){
-    return Math.floor(num*100)/100
+function getfloor(num) {
+    return Math.floor(num * 100) / 100
 }
 
-export function creat_planet(stid,heigh,st){
-    let numid=hash([stid,heigh])
-    let type=Object.keys(planet_type)[Math.floor(rand([numid,1],0,3))]
-    let mass=rand([numid,2],planet_type[type].mass[0],planet_type[type].mass[1],true)//倍地球质量
-    let radius=rand([numid,3],planet_type[type].rad[0],planet_type[type].rad[1],true)//倍地球半径
-    let rou=mass/radius**3*4//平均密度
-    let g=9.81*(mass/(radius)**2)//重力加速度
+export function creat_planet(stid, heigh, st) {
+    let numid = hash([stid, heigh])
+    let type = Object.keys(planet_type)[Math.floor(rand([numid, 1], 0, 3))]
+    let mass = rand([numid, 2], planet_type[type].mass[0], planet_type[type].mass[1], true)//倍地球质量
+    let radius = rand([numid, 3], planet_type[type].rad[0], planet_type[type].rad[1], true)//倍地球半径
+    let rou = mass / radius ** 3 * 4//平均密度
+    let g = 9.81 * (mass / (radius) ** 2)//重力加速度
 
-    let jizuobiao=rand([stid,heigh,11],-Math.PI,Math.PI,true)
+    let jizuobiao = rand([stid, heigh, 11], -Math.PI, Math.PI, true)
 
-    let air=generateAtmosphere(type,mass,heigh)
-    let color=getPlanetColor(air)
-    
+    let air = generateAtmosphere(type, mass, heigh)
+    let color = getPlanetColor(air)
+
     return {
-        'mass':getfloor(mass),
-        'radius':getfloor(radius),
-        'anglepos':getfloor(jizuobiao),
-        'heigh':getfloor(heigh),
-        'rou':getfloor(rou),
-        'g':getfloor(g),
-        'type':type,
-        'air':air,
-        'color':color,
+        'mass': getfloor(mass),
+        'radius': getfloor(radius),
+        'anglepos': getfloor(jizuobiao),
+        'heigh': getfloor(heigh),
+        'rou': getfloor(rou),
+        'g': getfloor(g),
+        'type': type,
+        'air': air,
+        'color': color,
     }
 }
 
 
 
-let bloseed=hash(['block'])
-let noise=new PerlinNoise2D()
+let bloseed = hash(['block'])
+let noise = new PerlinNoise2D()
 export function getblock(x, y) {
-    let stardata=[]
+    let stardata = []
     let bx = x//Math.ceil(x/500);
     let by = y//Math.ceil(y/500);
     /*let n=(noise.get(bx/100,by/100,bloseed+10)+1)*5
@@ -412,61 +412,61 @@ export function getblock(x, y) {
             stardata.push(creat_star(x,y,i));
         }
     }*/
-    let i=0
-    let nx = Math.floor(rand([bx,by,i,1],0,500))
-    let ny = Math.floor(rand([bx,by,i,2],0,500))
-    let molist=[[nx,ny]]
-    let starlists=[]
-    while(molist.length){
-        let idx=Math.floor(rand([x,y,i],0,molist.length-1))
-        let ths=molist[idx]
-        let r=Math.floor((-(noise.get(ths[0]/20,ths[1]/20,bloseed+i))+1)*100)
+    let i = 0
+    let nx = Math.floor(rand([bx, by, i, 1], 0, 500))
+    let ny = Math.floor(rand([bx, by, i, 2], 0, 500))
+    let molist = [[nx, ny]]
+    let starlists = []
+    while (molist.length) {
+        let idx = Math.floor(rand([x, y, i], 0, molist.length - 1))
+        let ths = molist[idx]
+        let r = Math.floor((-(noise.get(ths[0] / 20, ths[1] / 20, bloseed + i)) + 1) * 100)
         //console.log(r)
-        let found=false
-        for(let j=0;j<200;j++){
-            let theta=rand([x,y,i,j,1],0,2*Math.PI)
-            let ra=rand([x,y,i,j,2],0,r)
-            let npos=[ths[0]+ra*Math.cos(theta),ths[1]+ra*Math.sin(theta)]
-            if(npos[0]<0||npos[1]<0||npos[0]>500||npos[1]>500){
+        let found = false
+        for (let j = 0; j < 200; j++) {
+            let theta = rand([x, y, i, j, 1], 0, 2 * Math.PI)
+            let ra = rand([x, y, i, j, 2], 0, r)
+            let npos = [ths[0] + ra * Math.cos(theta), ths[1] + ra * Math.sin(theta)]
+            if (npos[0] < 0 || npos[1] < 0 || npos[0] > 500 || npos[1] > 500) {
                 continue
             }
-            let vear=false
+            let vear = false
             //if(starlists.length<2){vear=true}
-            for(let mo of starlists){
-                let distance=Math.sqrt((mo[0]-npos[0])**2+(mo[1]-npos[1])**2)
-                if((distance<r)){
+            for (let mo of starlists) {
+                let distance = Math.sqrt((mo[0] - npos[0]) ** 2 + (mo[1] - npos[1]) ** 2)
+                if ((distance < r)) {
                     //console.log('too close',distance,r)
-                    vear=true
+                    vear = true
                     break
                 }
             }
-            if(!vear){
+            if (!vear) {
                 molist.push(npos)
                 starlists.push(npos)
-                found=true
+                found = true
                 break
             }
         }
 
-        if(!found){
-            molist.splice(idx,1)
+        if (!found) {
+            molist.splice(idx, 1)
             //console.log('remove',idx)
         }
 
         i++
-        if(i>1000){
+        if (i > 1000) {
             console.log('too many loop')
             break
         }
     }
-    for(let st of starlists){
-        let dyata=null
+    for (let st of starlists) {
+        let dyata = null
         //console.log(st.posid,datalist,st.posid in datalist)
-        if(st.posid in datalist){dyata=datalist[st.posid]}
-        let geshi={
-            star:creat_star(x,y,st[0],st[1],i),
-            data:null,
-            planet:[]
+        if (st.posid in datalist) { dyata = datalist[st.posid] }
+        let geshi = {
+            star: creat_star(x, y, st[0], st[1], i),
+            data: null,
+            planet: []
         }
         stardata.push(geshi);
     }
@@ -475,7 +475,7 @@ export function getblock(x, y) {
 }
 
 
-export function savedata(st,data){
-    st.data=data
-    datalist[st.star.posid]=data
+export function savedata(st, data) {
+    st.data = data
+    datalist[st.star.posid] = data
 }

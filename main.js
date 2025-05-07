@@ -30,7 +30,7 @@ app.stage.addChild(mapLayer);
 export const planetLayer = new PIXI.Container();
 app.stage.addChild(planetLayer);
 
-export const beload={}
-export const addload=[]
+export const beload = {}
+export const addload = []
 export const datalist = {}
 

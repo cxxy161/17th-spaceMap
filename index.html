@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>第十五号星系-地图</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="header">
         <div id="pos_go">
@@ -19,20 +21,20 @@
         </div>
     </div>
     <div id="infomation">
-            <button id="close_btn">关闭</button>
-            <h3>星体信息:</h3>
-            <div id="star_info"></div>
-            <br/>
-            <div id="star_name">
-                    <span class="star_get_name"></span>
-                    <input type="text" id="star_name_input" placeholder="请输入名称" />
-                    <input type="text" id="star_remak_input" placeholder="请输入备注" />
-                    <button id="input_save">保存</button>
-            </div>
-            <button id="intostar">进入星系</button>
-            <button id="out_star">退出星体</button>
+        <button id="close_btn">关闭</button>
+        <h3>星体信息:</h3>
+        <div id="star_info"></div>
+        <br />
+        <div id="star_name">
+            <span class="star_get_name"></span>
+            <input type="text" id="star_name_input" placeholder="请输入名称" />
+            <input type="text" id="star_remak_input" placeholder="请输入备注" />
+            <button id="input_save">保存</button>
+        </div>
+        <button id="intostar">进入星系</button>
+        <button id="out_star">退出星体</button>
     </div>
-    
+
     <div id="game-container"></div>
 
     <!-- 引入 Pixi.js 库 -->
@@ -42,9 +44,10 @@
     <script type="module" src="main.js"></script>
     <script type="module" src="class.js"></script>
     <script type="module" src="data.js"></script>
-    <script type="module"  src="Interaction.js"></script>
+    <script type="module" src="Interaction.js"></script>
     <script type="module" src="rend.js"></script>
 
     <script type="module" src="html_inter.js"></script>
 </body>
+
 </html>
