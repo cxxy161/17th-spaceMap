@@ -1,4 +1,4 @@
-import { movecamera, inotsta, out_of_star } from './Interaction.js';
+import { movecamera, inotsta, out_of_star,now_view } from './Interaction.js';
 import { posIdToXY } from './class.js';
 import { savedata } from './data.js';
 import { datalist } from './main.js';
@@ -9,7 +9,7 @@ let buttun_gos_go = document.getElementById("go_btn");
 let info_fa_back = document.getElementById("infomation");
 let info_conve = document.getElementById("star_info");
 
-let now_view = 'map'
+//et now_view = 'map'
 let now_star
 
 
@@ -178,7 +178,7 @@ butt_inostar.addEventListener("click", function () {
     //butt_inostar.style.display = "none"
     //butt_outstar.style.display = "block"
     now_star = null
-    now_view = 'planet'
+    //now_view = 'planet'
     info_fa_back.style.display = "none"
 })
 
@@ -187,6 +187,6 @@ butt_outstar.addEventListener("click", function () {
     //butt_inostar.style.display = "block"
     //butt_outstar.style.display = "none"
     now_star = null
-    now_view = 'map'
+    //now_view = 'map'
     info_fa_back.style.display = "none"
 })

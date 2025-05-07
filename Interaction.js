@@ -5,6 +5,8 @@ import { chose_star, close_planet } from "./html_inter.js";
 app.stage.interactive = true;
 app.stage.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height);
 
+
+export let now_view = 'map'
 // 多指触控状态存储
 const onTouchPointerIds = {};
 let dragStart = { x: 0, y: 0 }
@@ -181,7 +183,42 @@ function which() {
   }
   return mapLayer; // 默认返回 mapLayer
 }
+function onDragMove(event) {
+  const layer = which();
+  if (!layer.dragging) {
+    layer.dragging = true;
+    dragStart.x = event.global.x - layer.x;
+    dragStart.y = event.global.y - layer.y;
+  }
+  
+  layer.x = event.global.x - dragStart.x;
+  layer.y = event.global.y - dragStart.y;
+  layer.lastdrag = Date.now();
+  check_new_bolck();
+}
 
+function onWheel(event) {
+  event.preventDefault();
+  const layer = which();
+  const scaleFactor = 1.2;
+  const mousePosition = event.global;
+  
+  const mouseInMapX = (mousePosition.x - layer.x) / layer.scale.x;
+  const mouseInMapY = (mousePosition.y - layer.y) / layer.scale.y;
+  
+  const newScale = event.deltaY > 0 
+    ? layer.scale.x / scaleFactor
+    : layer.scale.x * scaleFactor;
+  
+  const minScale = 0.2;
+  const maxScale = 5;
+  if (newScale < minScale || newScale > maxScale) return;
+  
+  layer.scale.set(newScale);
+  layer.x = mousePosition.x - mouseInMapX * newScale;
+  layer.y = mousePosition.y - mouseInMapY * newScale;
+  check_new_bolck();
+}
 
 export function movecamera(x, y) {
   // 移动地图层到指定位置
@@ -277,7 +314,6 @@ export function out_of_star() {
   mapLayer.visible = true
   //console.log('into map')
 }
-let now_view = 'map'
 // 监听键盘事件
 window.addEventListener('keydown', (event) => {
   //console.log(event.key);
@@ -299,17 +335,7 @@ export function inotsta(st) {
   rend_planet(st)
 }
 
-window.addEventListener('mousedown', (event) => {
-  console.log(event.button)
-  if (event.button === 2 && now_view == 'map') {
-    //let pos=event.getLocalPosition(mapLayer);
-    let pos = mapLayer.toLocal(new PIXI.Point(event.clientX, event.clientY));
-    let st = intostar(pos.x, pos.y);
-    if (st) {
-      inotsta(st)
-    }
-  }
-});
+
 document.addEventListener('contextmenu', (e) => {
   e.preventDefault();
 });
