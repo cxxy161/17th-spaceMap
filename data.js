@@ -372,9 +372,11 @@ function getfloor(num) {
 export function creat_planet(stid, heigh, st) {
     let numid = hash([stid, heigh])
     let type = Object.keys(planet_type)[Math.floor(rand([numid, 1], 0, 3))]
-    let mass = rand([numid, 2], planet_type[type].mass[0], planet_type[type].mass[1], true)//倍地球质量
+    let rou = rand([numid, 1], planet_type[type].rou[0], planet_type[type].rou[1], true)//平均密度
+    //let mass = rand([numid, 2], planet_type[type].mass[0], planet_type[type].mass[1], true)//倍地球质量
     let radius = rand([numid, 3], planet_type[type].rad[0], planet_type[type].rad[1], true)//倍地球半径
-    let rou = mass / radius ** 3 * 4//平均密度
+    let mass = getfloor(rou * Math.pow(radius, 3))//倍地球质量
+    //let rou = mass / radius ** 3 * 4//平均密度
     let g = 9.81 * (mass / (radius) ** 2)//重力加速度
 
     let jizuobiao = rand([stid, heigh, 11], -Math.PI, Math.PI, true)
